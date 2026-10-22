@@ -12,6 +12,12 @@ import AdminMembers from './pages/AdminMembers';
 import AdminAttendance from './pages/AdminAttendance';
 import { THEME, Button, Card } from './components/UI';
 import PublicScanView from './pages/PublicScanView';
+import AdminMemberLink from './pages/AdminMemberLink';
+
+
+
+
+
 // --- ANIMATION KEYFRAMES ---
 const animationStyles = `
   @keyframes fadeInUp {
@@ -145,7 +151,7 @@ export default function App() {
       <Route path="/admin/events" element={<AdminEvents />} />
       <Route path="/admin/members" element={<AdminMembers />} />
       <Route path="/admin/attendance" element={<AdminAttendance />} />
-      
+      <Route path="/admin/member-link" element={<AdminMemberLink />} />
       <Route path="/admin/scan" element={<AdminScan />} />
       <Route path="/admin/scanner" element={<ScannerStandalone />} />
     </Routes>

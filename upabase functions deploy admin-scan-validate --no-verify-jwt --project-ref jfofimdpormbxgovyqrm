@@ -1,0 +1,3 @@
+[33m061b36f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Deploy final architecture: URL-based QR and admin secret verification
+[33m208c8e6[m Revert QR to raw token and enforce admin password for confirmation
+[33m013a6c2[m Add unique QR URLs and support scanning URLs
