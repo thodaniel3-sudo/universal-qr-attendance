@@ -6,7 +6,7 @@ import OrgLogin from './pages/OrgLogin';
 import OrgDashboard from './pages/OrgDashboard';
 import MemberRegister from './pages/MemberRegister';
 import AdminScan from './pages/AdminScan'; // <-- Import it
-
+import ScannerStandalone from './pages/ScannerStandalone';
 // ... inside <Routes> ...
 <Route path="/admin/scan" element={<AdminScan />} />
 
@@ -40,7 +40,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      
+      <Route path="/admin/scan" element={<AdminScan />} />
       {/* Public Routes */}
       <Route path="/register" element={<MemberRegister />} />
       
@@ -48,7 +48,7 @@ export default function App() {
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
-      
+      <Route path="/admin/scanner" element={<ScannerStandalone />} />
       {/* Organization Admin Routes */}
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />
