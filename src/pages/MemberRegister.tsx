@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import QRCode from 'qrcode';
 import { THEME, Button, Card, Input, Select, PageContainer } from '../components/UI';
 
 export default function MemberRegister() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const orgParam = searchParams.get('org'); // Get org from URL
+
   const [orgs, setOrgs] = useState<any[]>([]);
+  const [orgId, setOrgId] = useState(orgParam || '');
   const [loading, setLoading] = useState(false);
-  const [successData, setSuccessData] = useState<{ token: string, name: string } | null>(null);
+  const [successData, setSuccessData] = useState<{ token: string, name: string, qr_url: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [orgId, setOrgId] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [memberRef, setMemberRef] = useState('');
@@ -22,17 +25,26 @@ export default function MemberRegister() {
   useEffect(() => {
     supabase
       .from('organizations')
-      .select('id, name, organization_type')
+      .select('id, name, organization_type, slug')
       .eq('contract_status', 'active')
       .eq('is_archived', false)
       .order('name')
-      .then(({ data }) => { if (data) setOrgs(data); });
-  }, []);
+      .then(({ data }) => { 
+        if (data) {
+          setOrgs(data);
+          // If the URL had an org slug, set the ID automatically
+          if (orgParam) {
+            const matchedOrg = data.find(o => o.slug === orgParam);
+            if (matchedOrg) setOrgId(matchedOrg.id);
+          }
+        } 
+      });
+  }, [orgParam]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!photo) return setError('Profile photograph is required.');
-    if (photo.size > 5 * 1024 * 1024) return setError('Photo must be under 5 MB.');
+    if (!orgId) return setError('Organization is required.');
 
     setError(null);
     setLoading(true);
@@ -60,23 +72,33 @@ export default function MemberRegister() {
       return;
     }
     
-    // Use the raw token for the QR code
-    setSuccessData({ token: data.qr_token, name: data.member.full_name });
+    setSuccessData({ token: data.qr_url, name: data.member.full_name, qr_url: data.qr_url });
     setLoading(false);
   }
 
-  if (successData) return <QRSuccessView token={successData.token} name={successData.name} />;
+  if (successData) return <QRSuccessView token={successData.token} name={successData.name} qrUrl={successData.qr_url} />;
+
+  const isPreSelected = !!orgParam && orgId !== '';
 
   return (
     <PageContainer title="Member Registration" subtitle="Register to get your secure attendance QR code." action={<Link to="/"><Button variant="outline">Back to Home</Button></Link>}>
       <Card style={{ maxWidth: '600px', margin: '0 auto' }}>
         <form onSubmit={handleSubmit}>
-          <Select label="Organization *" value={orgId} onChange={(e: any) => setOrgId(e.target.value)} required>
-            <option value="">-- Select an organization --</option>
-            {orgs.map(o => (
-              <option key={o.id} value={o.id}>{o.name} ({o.organization_type})</option>
-            ))}
-          </Select>
+          {isPreSelected ? (
+             <div style={{ padding: '1rem', background: THEME.input, borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                <p style={{ margin: 0, color: THEME.textMuted, fontSize: '0.875rem' }}>Registering for:</p>
+                <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: THEME.success }}>
+                  {orgs.find(o => o.id === orgId)?.name || 'Loading...'}
+                </p>
+             </div>
+          ) : (
+            <Select label="Organization *" value={orgId} onChange={(e: any) => setOrgId(e.target.value)} required>
+              <option value="">-- Select an organization --</option>
+              {orgs.map(o => (
+                <option key={o.id} value={o.id}>{o.name} ({o.organization_type})</option>
+              ))}
+            </Select>
+          )}
           
           <Input label="Full Name *" value={fullName} onChange={(e: any) => setFullName(e.target.value)} required />
           <Input label="Phone Number *" value={phone} onChange={(e: any) => setPhone(e.target.value)} required />
@@ -86,30 +108,12 @@ export default function MemberRegister() {
 
           <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: THEME.textMuted, fontSize: '0.875rem' }}>Profile Photograph *</label>
-            <input 
-              type="file" 
-              accept="image/jpeg,image/png,image/webp" 
-              required 
-              onChange={e => setPhoto(e.target.files?.[0] || null)} 
-              style={{ 
-                width: '100%', 
-                padding: '0.75rem', 
-                borderRadius: '0.5rem', 
-                border: `1px solid ${THEME.input}`, 
-                background: THEME.input, 
-                color: THEME.text, 
-                fontSize: '1rem', 
-                outline: 'none' 
-              }} 
-            />
-            <span style={{ fontSize: '0.75rem', color: THEME.textMuted, marginTop: '0.25rem', display: 'block' }}>Max 5MB. JPG, PNG, or WebP.</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" required onChange={e => setPhoto(e.target.files?.[0] || null)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: `1px solid ${THEME.input}`, background: THEME.input, color: THEME.text, fontSize: '1rem', outline: 'none' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', color: THEME.textMuted }}>
             <input type="checkbox" required id="privacy" style={{ marginTop: '0.25rem' }} />
-            <label htmlFor="privacy" style={{ fontSize: '0.875rem' }}>
-              I accept the privacy notice. My photo will be deleted when the organization's contract expires.
-            </label>
+            <label htmlFor="privacy" style={{ fontSize: '0.875rem' }}>I accept the privacy notice.</label>
           </div>
 
           {error && <p style={{ color: THEME.danger, fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
@@ -123,12 +127,12 @@ export default function MemberRegister() {
   );
 }
 
-function QRSuccessView({ token, name }: { token: string, name: string }) {
-  const [qrUrl, setQrUrl] = useState('');
+function QRSuccessView({ token, name, qrUrl }: { token: string, name: string, qrUrl: string }) {
+  const [qrImage, setQrImage] = useState('');
   
   useEffect(() => {
     QRCode.toDataURL(token, { width: 400, margin: 2 }).then((url) => {
-      setQrUrl(url);
+      setQrImage(url);
       const link = document.createElement('a');
       link.href = url;
       link.download = `QR-${name.replace(/\s+/g, '-')}.png`;
@@ -144,21 +148,21 @@ function QRSuccessView({ token, name }: { token: string, name: string }) {
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: THEME.success, marginBottom: '0.5rem' }}>Registration Successful!</h1>
         <p style={{ color: THEME.textMuted, marginBottom: '1.5rem' }}>Welcome, {name}</p>
         
-        {qrUrl && (
-          <img 
-            src={qrUrl} 
-            alt="QR Code" 
-            style={{ width: '100%', maxWidth: '250px', margin: '0 auto 1.5rem', display: 'block', background: 'white', padding: '1rem', borderRadius: '0.5rem' }} 
-          />
+        {qrImage && (
+          <img src={qrImage} alt="QR Code" style={{ width: '100%', maxWidth: '250px', margin: '0 auto 1.5rem', display: 'block', background: 'white', padding: '1rem', borderRadius: '0.5rem' }} />
         )}
         
-        <p style={{ fontSize: '0.875rem', color: THEME.textMuted, marginBottom: '1.5rem' }}>
-          Your QR code has been automatically downloaded. Save it for check-in!
+        <p style={{ fontSize: '0.875rem', color: THEME.textMuted, marginBottom: '1rem' }}>
+          Your QR code has been downloaded. You can also view your profile by clicking the link below.
         </p>
         
+        <a href={qrUrl} target="_blank" rel="noreferrer" style={{ color: THEME.primary, textDecoration: 'underline', marginBottom: '1.5rem', display: 'block' }}>
+          Open My Profile Link
+        </a>
+
         <Button variant="primary" onClick={() => {
           const link = document.createElement('a');
-          link.href = qrUrl;
+          link.href = qrImage;
           link.download = `QR-${name.replace(/\s+/g, '-')}.png`;
           link.click();
         }} style={{ width: '100%' }}>

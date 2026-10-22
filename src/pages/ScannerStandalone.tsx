@@ -13,8 +13,6 @@ export default function ScannerStandalone() {
   const [output, setOutput] = useState('Point camera at QR code');
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState('');
-  
-  // State for the verification step
   const [scannedMember, setScannedMember] = useState<any>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -92,7 +90,13 @@ export default function ScannerStandalone() {
     };
   }, [selectedEvent, scannedMember]);
 
-  async function validateToken(token: string) {
+  // EXTRACTS URL OR RAW TOKEN PERFECTLY
+  async function validateToken(scannedData: string) {
+    let token = scannedData;
+    if (scannedData.includes('/scan/')) {
+      token = scannedData.split('/scan/')[1];
+    }
+
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
         method: 'POST',
@@ -116,7 +120,6 @@ export default function ScannerStandalone() {
     
     setIsProcessing(true);
     try {
-      // 1. First, verify the admin's password by attempting to sign in
       const { data: { user } } = await supabase.auth.getUser();
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: user?.email || '',
@@ -125,7 +128,6 @@ export default function ScannerStandalone() {
 
       if (authError) throw new Error("Incorrect admin secret.");
       
-      // 2. If password is correct, confirm attendance
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
         method: 'POST',
         headers: { 

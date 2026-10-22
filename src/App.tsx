@@ -11,7 +11,7 @@ import AdminEvents from './pages/AdminEvents';
 import AdminMembers from './pages/AdminMembers';
 import AdminAttendance from './pages/AdminAttendance';
 import { THEME, Button, Card } from './components/UI';
-
+import PublicScanView from './pages/PublicScanView';
 // --- ANIMATION KEYFRAMES ---
 const animationStyles = `
   @keyframes fadeInUp {
@@ -139,6 +139,7 @@ export default function App() {
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
       
+      <Route path="/scan/:token" element={<PublicScanView />} />
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />
       <Route path="/admin/events" element={<AdminEvents />} />
