@@ -76,7 +76,7 @@ function Landing() {
           
           <Link to="/admin/scanner">
             <Button variant="primary" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
-              📷 Open Scanner
+              📷 Open Scanner [LIVE]
             </Button>
           </Link>
           
