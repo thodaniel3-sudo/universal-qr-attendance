@@ -13,6 +13,7 @@ export default function ScannerStandalone() {
   const [output, setOutput] = useState('Point camera at QR code');
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState('');
+  const [lockEvent, setLockEvent] = useState(false); // NEW: Remember event across scans
   const [scannedMember, setScannedMember] = useState<any>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -98,15 +99,11 @@ export default function ScannerStandalone() {
   }, [selectedEvent, scannedMember]);
 
   async function validateToken(scannedData: string) {
-    // Extract token from URL OR use raw token
     let token = scannedData;
     if (scannedData.includes('/scan/')) {
       token = scannedData.split('/scan/')[1];
     }
-    // Strip any trailing query/hash if present
     token = token.split('?')[0].split('#')[0];
-
-    console.log('Scanning with token:', token);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
@@ -132,7 +129,6 @@ export default function ScannerStandalone() {
     
     setIsProcessing(true);
     try {
-      // Verify the admin's password by attempting sign in
       const { data: { user } } = await supabase.auth.getUser();
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: user?.email || '',
@@ -141,7 +137,6 @@ export default function ScannerStandalone() {
 
       if (authError) throw new Error("Incorrect admin secret.");
       
-      // Record attendance
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
         method: 'POST',
         headers: { 
@@ -174,21 +169,87 @@ export default function ScannerStandalone() {
     setScannedRaw('');
     isProcessingRef.current = false;
     setOutput("Point camera at QR code");
+    // NOTE: We do NOT reset `selectedEvent` and `lockEvent` — that's the whole point of "Lock Event".
+    // If the admin wants to change events, they'll uncheck the box.
   }
+
+  const selectedEventName = events.find(e => e.id === selectedEvent)?.name;
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: THEME.bg, minHeight: '100vh', padding: '2rem', color: THEME.text, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
         
-        <Select
-          label="Select Event to Scan For *"
-          value={selectedEvent}
-          onChange={(e: any) => setSelectedEvent(e.target.value)}
-          style={{ marginBottom: '1.5rem', borderColor: '#ffcc00' }}
-        >
-          <option value="">-- Choose an Event --</option>
-          {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-        </Select>
+        {/* LOCKED / UNLOCKED EVENT SELECTOR */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          {lockEvent && selectedEventName ? (
+            // When locked, show a "locked" chip instead of the dropdown
+            <div style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: `2px solid ${THEME.success}`,
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem'
+            }}>
+              <div>
+                <p style={{ margin: 0, color: THEME.textMuted, fontSize: '0.75rem' }}>Scanning for:</p>
+                <p style={{ margin: 0, color: THEME.success, fontWeight: 700, fontSize: '1.1rem' }}>🔒 {selectedEventName}</p>
+              </div>
+              <button
+                onClick={() => setLockEvent(false)}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${THEME.border}`,
+                  color: THEME.text,
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem'
+                }}
+              >
+                Unlock
+              </button>
+            </div>
+          ) : (
+            // When unlocked, show the dropdown + checkbox
+            <>
+              <Select
+                label="Select Event to Scan For *"
+                value={selectedEvent}
+                onChange={(e: any) => setSelectedEvent(e.target.value)}
+                style={{ marginBottom: '0.75rem', borderColor: '#ffcc00' }}
+              >
+                <option value="">-- Choose an Event --</option>
+                {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+              </Select>
+              
+              {selectedEvent && (
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                  padding: '0.75rem',
+                  background: THEME.input,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={lockEvent}
+                    onChange={(e) => setLockEvent(e.target.checked)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>
+                    🔒 <strong>Lock Event</strong> — Don't ask me again until I unlock
+                  </span>
+                </label>
+              )}
+            </>
+          )}
+        </div>
 
         {!scannedMember ? (
           <Card style={{ textAlign: 'center' }}>
@@ -197,7 +258,7 @@ export default function ScannerStandalone() {
             <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
             <p style={{ fontSize: '1rem', fontWeight: 'bold', color: THEME.textMuted }}>{output}</p>
             {scannedRaw && (
-              <p style={{ fontSize: '0.75rem', color: THEME.textMuted, wordBreak: 'break-all', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.7rem', color: THEME.textMuted, wordBreak: 'break-all', marginTop: '0.5rem', fontFamily: 'monospace' }}>
                 Last scanned: {scannedRaw.substring(0, 60)}...
               </p>
             )}
