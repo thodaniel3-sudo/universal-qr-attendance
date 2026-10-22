@@ -48,7 +48,12 @@ export default function OrgDashboard() {
             <p style={{ color: THEME.textMuted, margin: 0 }}>Create events and open them for scanning.</p>
           </Card>
         </Link>
-
+        <Link to="/admin/attendance" style={{ textDecoration: 'none' }}>
+          <Card style={{ cursor: 'pointer', borderTop: `4px solid #8b5cf6`, height: '100%' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Attendance History</h2>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>View who attended which events and export data.</p>
+          </Card>
+        </Link>
         <Link to="/admin/members" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid #f59e0b`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Members</h2>
