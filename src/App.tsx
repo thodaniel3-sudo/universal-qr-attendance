@@ -22,11 +22,12 @@ function Landing() {
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link to="/register">
-            <Button variant="outline" style={{ padding: '0.5rem 1rem' }}>Member Login</Button>
+          {/* SCANNER BUTTON ADDED TO NAV */}
+          <Link to="/admin/scanner">
+            <Button variant="outline" style={{ padding: '0.5rem 1rem' }}>📷 Quick Scan</Button>
           </Link>
           <Link to="/admin/login">
-            <Button variant="primary" style={{ padding: '0.5rem 1rem' }}>Admin Login</Button>
+            <Button variant="primary" style={{ padding: '0.5rem 1rem' }}>Organization Login</Button>
           </Link>
         </div>
       </nav>
@@ -48,14 +49,20 @@ function Landing() {
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link to="/admin/login">
+          {/* CLEARLY DIFFERENTIATED BUTTONS */}
+          <Link to="/admin/scanner">
             <Button variant="primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-              Login to Dashboard
+              📷 Open Scanner
+            </Button>
+          </Link>
+          <Link to="/admin/login">
+            <Button variant="outline" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+              🏢 Organization Admin Login
             </Button>
           </Link>
           <Link to="/register">
             <Button variant="success" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-              Register as Member
+              👤 Register as Member
             </Button>
           </Link>
         </div>
@@ -64,33 +71,32 @@ function Landing() {
       {/* Feature Section */}
       <section style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0a0f1c' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-          
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📸</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Photo Verification</h3>
             <p style={{ color: THEME.textMuted, fontSize: '0.9rem' }}>Scanners pop up the member's photo instantly to prevent proxy attendance.</p>
           </div>
-
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚡</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Instant Scanning</h3>
             <p style={{ color: THEME.textMuted, fontSize: '0.9rem' }}>High-speed browser-based camera scanning. No extra hardware required.</p>
           </div>
-
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Live Reports</h3>
-            <p style={{ color: THEME.textMuted, fontSize: '0.9rem' }}>View attendance history in real-time and download CSV reports for accounting.</p>
+            <p style={{ color: THEME.textMuted, fontSize: '0.875rem' }}>View attendance history in real-time and download CSV reports for accounting.</p>
           </div>
-
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer with Hidden Platform Owner Login */}
       <footer style={{ padding: '2rem', textAlign: 'center', color: THEME.textMuted, borderTop: `1px solid ${THEME.border}`, fontSize: '0.875rem' }}>
         <p>© {new Date().getFullYear()} QR Attendance Platform. All rights reserved.</p>
         <div style={{ marginTop: '1rem' }}>
-          <Link to="/platform-admin/login" style={{ color: THEME.textMuted, textDecoration: 'none', margin: '0 1rem' }}>Platform Admin</Link>
+          {/* This is the Central Administrator (YOU) login */}
+          <Link to="/platform-admin/login" style={{ color: THEME.textMuted, textDecoration: 'none', margin: '0 1rem', fontSize: '0.75rem' }}>
+            Platform Owner Portal
+          </Link>
         </div>
       </footer>
     </div>
@@ -103,7 +109,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<MemberRegister />} />
       
-      {/* Platform Admin Routes */}
+      {/* Platform Owner (Central Admin) Routes */}
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
