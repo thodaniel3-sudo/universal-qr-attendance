@@ -8,6 +8,7 @@ export default function PlatformDashboard() {
   const [email, setEmail] = useState<string | null>(null);
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -15,7 +16,6 @@ export default function PlatformDashboard() {
       if (!user) return navigate('/platform-admin/login');
       setEmail(user.email ?? null);
 
-      // Fetch ALL organizations across the platform
       const { data } = await supabase
         .from('organizations')
         .select('*')
@@ -32,12 +32,41 @@ export default function PlatformDashboard() {
     navigate('/');
   }
 
+  async function downloadCSV() {
+    setExporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/platform-export-organizations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to export');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `platform_organizations_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <PageContainer 
       title="Platform Admin Console" 
       subtitle={`Signed in as: ${email}`}
       action={
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button variant="outline" onClick={downloadCSV} disabled={exporting || organizations.length === 0}>
+            {exporting ? 'Exporting...' : '📥 Export CSV'}
+          </Button>
           <Link to="/platform-admin/organizations/new">
             <Button variant="primary">+ New Organization</Button>
           </Link>
