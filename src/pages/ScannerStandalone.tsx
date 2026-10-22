@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { THEME, Button, Card, Select } from '../components/UI';
+import { THEME, Button, Card, Select, Input } from '../components/UI';
 
 declare global { interface Window { jsQR: any; } }
 
@@ -13,7 +13,10 @@ export default function ScannerStandalone() {
   const [output, setOutput] = useState('Point camera at QR code');
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState('');
+  
+  // State for the verification step
   const [scannedMember, setScannedMember] = useState<any>(null);
+  const [adminSecret, setAdminSecret] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
   const scanningRef = useRef(true);
@@ -62,9 +65,14 @@ export default function ScannerStandalone() {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
           const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+          
           if (code && !isProcessingRef.current) {
-            if (!selectedEvent) setOutput("⚠️ Select an event first!");
-            else { isProcessingRef.current = true; await validateToken(code.data.trim()); }
+            if (!selectedEvent) {
+              setOutput("⚠️ Select an event first!");
+            } else {
+              isProcessingRef.current = true;
+              await validateToken(code.data.trim());
+            }
           }
         }
       }
@@ -84,13 +92,7 @@ export default function ScannerStandalone() {
     };
   }, [selectedEvent, scannedMember]);
 
-  async function validateToken(scannedData: string) {
-    // Extract token if a full URL was scanned (e.g. https://.../scan/abc123)
-    let token = scannedData;
-    if (scannedData.includes('/scan/')) {
-      token = scannedData.split('/scan/')[1];
-    }
-
+  async function validateToken(token: string) {
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
         method: 'POST',
@@ -100,40 +102,63 @@ export default function ScannerStandalone() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      // Save the clean token, not the URL, for the confirm step
       setScannedMember({ ...data.member, rawToken: token });
-      setOutput("✅ Identity found. Verify photo before confirming.");
+      setOutput("✅ Identity found. Verify photo and enter admin secret.");
     } catch (err: any) {
       setOutput("❌ " + err.message);
       setTimeout(() => { setOutput("Point camera at QR code"); isProcessingRef.current = false; }, 3000);
     }
   }
 
-  async function confirmAttendance() {
+  async function confirmAttendance(e: React.FormEvent) {
+    e.preventDefault();
+    if (!adminSecret) return alert("Please enter the admin secret.");
+    
     setIsProcessing(true);
     try {
+      // 1. First, verify the admin's password by attempting to sign in
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: adminSecret
+      });
+
+      if (authError) throw new Error("Incorrect admin secret.");
+      
+      // 2. If password is correct, confirm attendance
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`, 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`, 
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY 
+        },
         body: JSON.stringify({ token: scannedMember.rawToken, event_id: selectedEvent, override: false })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      
       alert("Attendance Recorded Successfully!");
       resetScanner();
     } catch (err: any) {
       alert("Error: " + err.message);
+    } finally {
       setIsProcessing(false);
     }
   }
 
   function resetScanner() {
-    setScannedMember(null); setIsProcessing(false); isProcessingRef.current = false; setOutput("Point camera at QR code");
+    setScannedMember(null); 
+    setIsProcessing(false); 
+    setAdminSecret('');
+    isProcessingRef.current = false; 
+    setOutput("Point camera at QR code");
   }
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: THEME.bg, minHeight: '100vh', padding: '2rem', color: THEME.text, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
+        
         <Select label="Select Event to Scan For *" value={selectedEvent} onChange={(e:any) => setSelectedEvent(e.target.value)} style={{ marginBottom: '1.5rem', borderColor: '#ffcc00' }}>
           <option value="">-- Choose an Event --</option>
           {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
@@ -157,10 +182,25 @@ export default function ScannerStandalone() {
             <h3 style={{ fontSize: '1.5rem', margin: '0.5rem 0' }}>{scannedMember.full_name}</h3>
             <p style={{ color: THEME.textMuted, marginBottom: '0.25rem' }}>ID: {scannedMember.member_reference}</p>
             <p style={{ color: THEME.textMuted, marginBottom: '1.5rem' }}>Email: {scannedMember.email}</p>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <Button variant="success" onClick={confirmAttendance} disabled={isProcessing} style={{ flex: 1 }}>{isProcessing ? 'Saving...' : 'Confirm'}</Button>
-              <Button variant="danger" onClick={resetScanner} disabled={isProcessing} style={{ flex: 1 }}>Cancel</Button>
-            </div>
+            
+            <form onSubmit={confirmAttendance}>
+              <Input 
+                label="Admin Secret (Password)" 
+                type="password" 
+                value={adminSecret} 
+                onChange={(e: any) => setAdminSecret(e.target.value)} 
+                required 
+                placeholder="Enter your password to confirm"
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <Button variant="success" type="submit" disabled={isProcessing} style={{ flex: 1 }}>
+                  {isProcessing ? 'Verifying...' : 'Confirm'}
+                </Button>
+                <Button variant="danger" type="button" onClick={resetScanner} disabled={isProcessing} style={{ flex: 1 }}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </Card>
         )}
 

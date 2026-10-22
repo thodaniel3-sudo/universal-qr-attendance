@@ -60,18 +60,15 @@ export default function MemberRegister() {
       return;
     }
     
-    setSuccessData({ token: data.qr_url, name: data.member.full_name });
+    // Use the raw token for the QR code
+    setSuccessData({ token: data.qr_token, name: data.member.full_name });
     setLoading(false);
   }
 
   if (successData) return <QRSuccessView token={successData.token} name={successData.name} />;
 
   return (
-    <PageContainer 
-      title="Member Registration" 
-      subtitle="Register to get your secure attendance QR code." 
-      action={<Link to="/"><Button variant="outline">Back to Home</Button></Link>}
-    >
+    <PageContainer title="Member Registration" subtitle="Register to get your secure attendance QR code." action={<Link to="/"><Button variant="outline">Back to Home</Button></Link>}>
       <Card style={{ maxWidth: '600px', margin: '0 auto' }}>
         <form onSubmit={handleSubmit}>
           <Select label="Organization *" value={orgId} onChange={(e: any) => setOrgId(e.target.value)} required>
@@ -132,7 +129,6 @@ function QRSuccessView({ token, name }: { token: string, name: string }) {
   useEffect(() => {
     QRCode.toDataURL(token, { width: 400, margin: 2 }).then((url) => {
       setQrUrl(url);
-      // Auto-download functionality
       const link = document.createElement('a');
       link.href = url;
       link.download = `QR-${name.replace(/\s+/g, '-')}.png`;

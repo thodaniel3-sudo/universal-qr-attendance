@@ -109,21 +109,16 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Registration failed.' }, 500);
     }
 
-    // 5) Generate QR token and unique URL
+    // 5) Generate QR token (Just the raw token, no URL)
     const rawToken = crypto.getRandomValues(new Uint8Array(32));
     const token = base64url(rawToken);
     const tokenHash = await sha256Hex(token);
-    
-    // Generate the unique URL using environment variable or fallback
-    const appUrl = Deno.env.get('APP_URL') || 'https://universal-qr-attendance-rdxa.vercel.app';
-    const qrUrl = `${appUrl}/scan/${token}`;
 
     const { error: qrErr } = await svc.from('qr_credentials').insert({
       organization_id: fields.organization_id,
       member_id: membership.id,
       token_hash: tokenHash,
       status: 'active',
-      qr_url: qrUrl, // <-- Save the URL to the database
     });
     
     if (qrErr) {
@@ -142,7 +137,7 @@ Deno.serve(async (req) => {
       target_id: membership.id,
     });
 
-    // Return the URL so the frontend can generate the image
+    // Return the raw token to the frontend for image generation
     return jsonResponse({
       member: {
         id: membership.id,
@@ -150,7 +145,6 @@ Deno.serve(async (req) => {
         member_reference: membership.member_reference,
       },
       qr_token: token,
-      qr_url: qrUrl,
     }, 201);
     
   } catch (e) {
