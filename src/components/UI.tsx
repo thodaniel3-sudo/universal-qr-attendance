@@ -17,18 +17,21 @@ export function Button({ children, variant = 'primary', style, ...props }: any) 
   const base = {
     padding: '0.75rem 1.5rem',
     borderRadius: '0.5rem',
-    border: 'none',
     fontWeight: 600,
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    transition: 'all 0.2s ease-in-out',
     fontSize: '1rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
     ...style,
   };
 
   const variants: any = {
-    primary: { background: THEME.primary, color: 'white' },
-    success: { background: THEME.success, color: 'white' },
-    danger: { background: THEME.danger, color: 'white' },
+    primary: { background: THEME.primary, color: 'white', border: '1px solid transparent' },
+    success: { background: THEME.success, color: 'white', border: '1px solid transparent' },
+    danger: { background: THEME.danger, color: 'white', border: '1px solid transparent' },
     outline: { background: 'transparent', color: THEME.text, border: `1px solid ${THEME.border}` },
   };
 

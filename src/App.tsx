@@ -12,17 +12,36 @@ import AdminMembers from './pages/AdminMembers';
 import AdminAttendance from './pages/AdminAttendance';
 import { THEME, Button, Card } from './components/UI';
 
+// --- ANIMATION KEYFRAMES ---
+const animationStyles = `
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+`;
+
 function Landing() {
   return (
     <div style={{ minHeight: '100vh', background: THEME.bg, color: THEME.text, display: 'flex', flexDirection: 'column' }}>
       
+      {/* INJECT ANIMATIONS */}
+      <style>{animationStyles}</style>
+
       {/* Navigation Bar */}
-      <nav style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}` }}>
+      <nav style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}` }} className="animate-fade-up">
         <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          {/* SCANNER BUTTON ADDED TO NAV */}
           <Link to="/admin/scanner">
             <Button variant="outline" style={{ padding: '0.5rem 1rem' }}>📷 Quick Scan</Button>
           </Link>
@@ -34,32 +53,35 @@ function Landing() {
 
       {/* Hero Section */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem' }}>
-        <div style={{ display: 'inline-block', padding: '0.25rem 1rem', background: 'rgba(59, 130, 246, 0.1)', color: THEME.primary, borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.5rem', border: `1px solid rgba(59, 130, 246, 0.2)` }}>
+        
+        <div className="animate-fade-up delay-100" style={{ display: 'inline-block', padding: '0.25rem 1rem', background: 'rgba(59, 130, 246, 0.1)', color: THEME.primary, borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.5rem', border: `1px solid rgba(59, 130, 246, 0.2)` }}>
           Secure • Fast • Reliable
         </div>
         
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, maxWidth: '800px', marginBottom: '1.5rem' }}>
+        <h1 className="animate-fade-up delay-200" style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, maxWidth: '800px', marginBottom: '1.5rem' }}>
           Universal QR Code <br />
           <span style={{ color: THEME.primary }}>Attendance Management</span>
         </h1>
         
-        <p style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
+        <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.
         </p>
 
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {/* CLEARLY DIFFERENTIATED BUTTONS */}
+        <div className="animate-fade-up delay-400" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link to="/admin/scanner">
             <Button variant="primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
               📷 Open Scanner
             </Button>
           </Link>
+          
+          {/* FIXED BORDER HERE */}
           <Link to="/admin/login">
-            <Button variant="outline" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+            <Button variant="outline" style={{ padding: '1rem 2rem', fontSize: '1.1rem', border: `1px solid ${THEME.border}` }}>
               🏢 Organization Admin Login
             </Button>
           </Link>
+          
           <Link to="/register">
             <Button variant="success" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
               👤 Register as Member
@@ -69,7 +91,7 @@ function Landing() {
       </main>
 
       {/* Feature Section */}
-      <section style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0a0f1c' }}>
+      <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0a0f1c' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📸</div>
@@ -84,16 +106,15 @@ function Landing() {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Live Reports</h3>
-            <p style={{ color: THEME.textMuted, fontSize: '0.875rem' }}>View attendance history in real-time and download CSV reports for accounting.</p>
+            <p style={{ color: THEME.textMuted, fontSize: '0.9rem' }}>View attendance history in real-time and download CSV reports for accounting.</p>
           </div>
         </div>
       </section>
 
-      {/* Footer with Hidden Platform Owner Login */}
+      {/* Footer */}
       <footer style={{ padding: '2rem', textAlign: 'center', color: THEME.textMuted, borderTop: `1px solid ${THEME.border}`, fontSize: '0.875rem' }}>
         <p>© {new Date().getFullYear()} QR Attendance Platform. All rights reserved.</p>
         <div style={{ marginTop: '1rem' }}>
-          {/* This is the Central Administrator (YOU) login */}
           <Link to="/platform-admin/login" style={{ color: THEME.textMuted, textDecoration: 'none', margin: '0 1rem', fontSize: '0.75rem' }}>
             Platform Owner Portal
           </Link>
@@ -109,19 +130,16 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<MemberRegister />} />
       
-      {/* Platform Owner (Central Admin) Routes */}
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
       
-      {/* Organization Admin Routes */}
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />
       <Route path="/admin/events" element={<AdminEvents />} />
       <Route path="/admin/members" element={<AdminMembers />} />
       <Route path="/admin/attendance" element={<AdminAttendance />} />
       
-      {/* The Scanner */}
       <Route path="/admin/scan" element={<AdminScan />} />
       <Route path="/admin/scanner" element={<ScannerStandalone />} />
     </Routes>
