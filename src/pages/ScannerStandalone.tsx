@@ -16,7 +16,6 @@ export default function ScannerStandalone() {
   const [scannedMember, setScannedMember] = useState<any>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   
   const scanningRef = useRef(true);
   const isProcessingRef = useRef(false);
@@ -27,11 +26,7 @@ export default function ScannerStandalone() {
       if (!user) return navigate('/admin/login');
       const org = user.app_metadata?.org_id;
       if (org) {
-        const { data } = await supabase
-          .from('events')
-          .select('id, name')
-          .eq('organization_id', org)
-          .eq('status', 'open');
+        const { data } = await supabase.from('events').select('id, name').eq('organization_id', org).eq('status', 'open');
         if (data) setEvents(data);
       }
     }
@@ -74,9 +69,7 @@ export default function ScannerStandalone() {
               setOutput("⚠️ Select an event first!");
             } else {
               isProcessingRef.current = true;
-              const scannedData = code.data.trim();
-              setDebugInfo(`Scanned: ${scannedData}`);
-              await validateToken(scannedData);
+              await validateToken(code.data.trim());
             }
           }
         }
@@ -97,53 +90,27 @@ export default function ScannerStandalone() {
     };
   }, [selectedEvent, scannedMember]);
 
-  // ⭐ ROBUST TOKEN EXTRACTOR
-  function extractToken(scannedData: string): string {
-    let token = scannedData.trim();
-    
-    // If it's a URL, extract the part after /scan/
-    if (token.includes('/scan/')) {
-      token = token.split('/scan/')[1];
-    }
-    
-    // Remove any trailing query string or hash
-    token = token.split('?')[0].split('#')[0];
-    
-    // Remove any trailing slashes
-    token = token.replace(/\/+$/, '');
-    
-    return token;
-  }
-
+  // EXTRACTS URL OR RAW TOKEN PERFECTLY
   async function validateToken(scannedData: string) {
-    const token = extractToken(scannedData);
-    console.log('🎯 EXTRACTED TOKEN:', token);
-    setDebugInfo(`Token: ${token}`);
-    setOutput(`Validating token...`);
+    let token = scannedData;
+    if (scannedData.includes('/scan/')) {
+      token = scannedData.split('/scan/')[1];
+    }
 
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY 
-        },
+        headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
         body: JSON.stringify({ token })
       });
       const data = await res.json();
-      console.log('📡 VALIDATE RESPONSE:', data);
-      
-      if (!res.ok) throw new Error(data.error || 'Validation failed');
+      if (!res.ok) throw new Error(data.error);
       
       setScannedMember({ ...data.member, rawToken: token });
       setOutput("✅ Identity found. Verify photo and enter admin secret.");
     } catch (err: any) {
       setOutput("❌ " + err.message);
-      setDebugInfo(`Error: ${err.message}`);
-      setTimeout(() => { 
-        setOutput("Point camera at QR code"); 
-        isProcessingRef.current = false; 
-      }, 3000);
+      setTimeout(() => { setOutput("Point camera at QR code"); isProcessingRef.current = false; }, 3000);
     }
   }
 
@@ -168,16 +135,12 @@ export default function ScannerStandalone() {
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`, 
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY 
         },
-        body: JSON.stringify({ 
-          token: scannedMember.rawToken, 
-          event_id: selectedEvent, 
-          override: false 
-        })
+        body: JSON.stringify({ token: scannedMember.rawToken, event_id: selectedEvent, override: false })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      alert("✅ Attendance Recorded Successfully!");
+      alert("Attendance Recorded Successfully!");
       resetScanner();
     } catch (err: any) {
       alert("Error: " + err.message);
@@ -187,11 +150,10 @@ export default function ScannerStandalone() {
   }
 
   function resetScanner() {
-    setScannedMember(null);
-    setIsProcessing(false);
+    setScannedMember(null); 
+    setIsProcessing(false); 
     setAdminSecret('');
-    setDebugInfo('');
-    isProcessingRef.current = false;
+    isProcessingRef.current = false; 
     setOutput("Point camera at QR code");
   }
 
@@ -199,12 +161,7 @@ export default function ScannerStandalone() {
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: THEME.bg, minHeight: '100vh', padding: '2rem', color: THEME.text, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
         
-        <Select
-          label="Select Event to Scan For *"
-          value={selectedEvent}
-          onChange={(e: any) => setSelectedEvent(e.target.value)}
-          style={{ marginBottom: '1.5rem', borderColor: '#ffcc00' }}
-        >
+        <Select label="Select Event to Scan For *" value={selectedEvent} onChange={(e:any) => setSelectedEvent(e.target.value)} style={{ marginBottom: '1.5rem', borderColor: '#ffcc00' }}>
           <option value="">-- Choose an Event --</option>
           {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
         </Select>
@@ -215,11 +172,6 @@ export default function ScannerStandalone() {
             <video ref={videoRef} autoPlay playsInline style={{ width: '100%', border: `2px solid ${THEME.primary}`, borderRadius: '12px', marginBottom: '1rem' }}></video>
             <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
             <p style={{ fontSize: '1rem', fontWeight: 'bold', color: THEME.textMuted }}>{output}</p>
-            {debugInfo && (
-              <p style={{ fontSize: '0.7rem', color: THEME.textMuted, wordBreak: 'break-all', marginTop: '0.5rem', fontFamily: 'monospace' }}>
-                {debugInfo}
-              </p>
-            )}
           </Card>
         ) : (
           <Card style={{ textAlign: 'center' }}>
@@ -234,12 +186,12 @@ export default function ScannerStandalone() {
             <p style={{ color: THEME.textMuted, marginBottom: '1.5rem' }}>Email: {scannedMember.email}</p>
             
             <form onSubmit={confirmAttendance}>
-              <Input
-                label="Admin Secret (Password)"
-                type="password"
-                value={adminSecret}
-                onChange={(e: any) => setAdminSecret(e.target.value)}
-                required
+              <Input 
+                label="Admin Secret (Password)" 
+                type="password" 
+                value={adminSecret} 
+                onChange={(e: any) => setAdminSecret(e.target.value)} 
+                required 
                 placeholder="Enter your password to confirm"
               />
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

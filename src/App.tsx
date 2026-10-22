@@ -14,7 +14,7 @@ import { THEME, Button, Card } from './components/UI';
 import PublicScanView from './pages/PublicScanView';
 import AdminMemberLink from './pages/AdminMemberLink';
 
-import AdminCSVExport from './pages/AdminCSVExport';
+
 
 
 
@@ -144,7 +144,7 @@ export default function App() {
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
-      <Route path="/admin/csv-export" element={<AdminCSVExport />} />
+      
       <Route path="/scan/:token" element={<PublicScanView />} />
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />

@@ -46,16 +46,7 @@ export default function OrgDashboard() {
             <p style={{ color: THEME.textMuted, margin: 0 }}>Open the camera to verify members and check them in.</p>
           </Card>
         </Link>
-        <Link to="/admin/csv-export" style={{ textDecoration: 'none' }}>
-  <Card style={{ cursor: 'pointer', borderTop: `4px solid #06b6d4`, height: '100%' }}>
-    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>
-      Download CSV
-    </h2>
-    <p style={{ color: THEME.textMuted, margin: 0 }}>
-      Export your members' attendance records with filters and date ranges.
-    </p>
-  </Card>
-</Link>
+
         <Link to="/admin/events" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid ${THEME.primary}`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Events</h2>
