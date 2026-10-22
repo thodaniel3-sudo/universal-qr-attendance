@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
-// Tell TypeScript that jsQR is loaded globally from the CDN
 declare global {
   interface Window { jsQR: any; }
 }
@@ -12,21 +11,28 @@ export default function ScannerStandalone() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [output, setOutput] = useState('Scan a QR code by pointing your camera at it.');
-  const [orgId, setOrgId] = useState<string | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   
+  // Use Refs for values needed inside the animation loop so they never go stale
   const scanningRef = useRef(true);
   const isProcessingRef = useRef(false);
+  const selectedEventRef = useRef('');
+  const orgIdRef = useRef<string | null>(null);
 
-  // 1. Load User & Events (from our database)
+  // Keep the ref updated whenever the user changes the dropdown
+  useEffect(() => {
+    selectedEventRef.current = selectedEvent;
+  }, [selectedEvent]);
+
+  // 1. Load User & Events
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return navigate('/admin/login');
       
       const org = user.app_metadata?.org_id;
-      setOrgId(org);
+      orgIdRef.current = org;
 
       if (org) {
         const { data } = await supabase
@@ -36,16 +42,16 @@ export default function ScannerStandalone() {
           .eq('status', 'open');
         if (data) {
           setEvents(data);
-          // Removed the auto-selection so it forces the user to pick one
         }
       }
     }
     init();
   }, [navigate]);
 
-  // 2. Your JSQR Logic integrated into React
+  // 2. Camera Logic
   useEffect(() => {
     let stream: MediaStream | null = null;
+    let animationFrameId: number;
 
     async function startCamera() {
       try {
@@ -56,7 +62,7 @@ export default function ScannerStandalone() {
           videoRef.current.srcObject = stream;
           videoRef.current.setAttribute("playsinline", "true");
           videoRef.current.play();
-          requestAnimationFrame(scanQRCode);
+          animationFrameId = requestAnimationFrame(scanQRCode);
         }
       } catch (err: any) {
         setOutput("Error accessing camera: " + err.message);
@@ -73,36 +79,31 @@ export default function ScannerStandalone() {
         canvas.height = video.videoHeight;
         canvas.width = video.videoWidth;
         
-        const context = canvas.getContext("2d");
+        const context = canvas.getContext("2d", { willReadFrequently: true });
         if (context) {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
           
           const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
+            inversionAttempts: "attemptBoth", // Try both dark-on-light and light-on-dark
           });
 
           if (code && !isProcessingRef.current) {
             const scannedData = code.data.trim();
             
-            // PAUSE SCANNING while we process the database request
-            isProcessingRef.current = true;
-            
-            if (!selectedEvent) {
+            if (!selectedEventRef.current) {
+              // Don't pause, just warn them quickly
               setOutput("⚠️ Please select an event first!");
-              alert("Please select an event first!");
-              setTimeout(() => {
-                 isProcessingRef.current = false;
-                 setOutput("Scan a QR code by pointing your camera at it.");
-              }, 3000);
             } else {
+              // PAUSE SCANNING and process
+              isProcessingRef.current = true;
               setOutput("QR Code detected: " + scannedData);
               await handleTokenScan(scannedData);
             }
           }
         }
       }
-      requestAnimationFrame(scanQRCode);
+      animationFrameId = requestAnimationFrame(scanQRCode);
     }
 
     // Load the jsQR library dynamically from the CDN
@@ -117,11 +118,12 @@ export default function ScannerStandalone() {
 
     return () => {
       scanningRef.current = false;
+      cancelAnimationFrame(animationFrameId);
       if (stream) stream.getTracks().forEach(track => track.stop());
     };
-  }, [selectedEvent]); // Added selectedEvent dependency so it updates in the loop
+  }, []); // <-- Empty dependency array means this only runs ONCE on mount
 
-  // 3. Send Token to Supabase Edge Function
+  // 3. Send Token to Supabase
   async function handleTokenScan(token: string) {
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
@@ -131,7 +133,7 @@ export default function ScannerStandalone() {
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ token, event_id: selectedEvent, override: false })
+        body: JSON.stringify({ token, event_id: selectedEventRef.current, override: false })
       });
       
       const data = await res.json();
@@ -144,7 +146,7 @@ export default function ScannerStandalone() {
       setOutput("❌ " + err.message);
       alert(err.message);
     } finally {
-      // RESUME SCANNING after processing finishes
+      // RESUME SCANNING after 3 seconds
       setTimeout(() => {
         isProcessingRef.current = false;
         setOutput("Scan a QR code by pointing your camera at it.");
@@ -152,38 +154,30 @@ export default function ScannerStandalone() {
     }
   }
 
-  // Your exact CSS styling applied to inline React styles
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', backgroundColor: '#121212', minHeight: '100vh', padding: '2rem', color: '#fff' }}>
       
       <h1 style={{ color: '#ffcc00' }}>QR Code Scanner</h1>
 
       <div style={{ marginBottom: '2rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Select Event to Scan For *</label>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Select Event *</label>
         <select 
           value={selectedEvent} 
           onChange={e => setSelectedEvent(e.target.value)} 
-          required // <-- THIS MAKES IT REQUIRED
           style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', border: '2px solid #ffcc00', background: '#000', color: '#fff', minWidth: '250px' }}
         >
-          <option value="" disabled>-- Choose an Event --</option>
+          <option value="">-- Choose an Event --</option>
           {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-        {!selectedEvent ? (
-          <div style={{ height: '300px', width: '100%', maxWidth: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #555', borderRadius: '12px' }}>
-            <p style={{ color: '#888' }}>Camera paused. Please select an event above.</p>
-          </div>
-        ) : (
-          <video 
-            ref={videoRef} 
-            autoPlay 
-            playsInline 
-            style={{ width: '100%', maxWidth: '400px', border: '2px solid #ffcc00', borderRadius: '12px', marginBottom: '1rem' }}
-          ></video>
-        )}
+        <video 
+          ref={videoRef} 
+          autoPlay 
+          playsInline 
+          style={{ width: '100%', maxWidth: '400px', border: '2px solid #ffcc00', borderRadius: '12px', marginBottom: '1rem' }}
+        ></video>
         <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
       </div>
 
