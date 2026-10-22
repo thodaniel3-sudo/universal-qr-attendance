@@ -1,6 +1,10 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import PlatformLogin from './pages/PlatformLogin';
 import PlatformDashboard from './pages/PlatformDashboard';
+
+import AdminEvents from './pages/AdminEvents';
+
+
 import NewOrganization from './pages/NewOrganization';
 import OrgLogin from './pages/OrgLogin';
 import OrgDashboard from './pages/OrgDashboard';
@@ -43,7 +47,7 @@ export default function App() {
       <Route path="/admin/scan" element={<AdminScan />} />
       {/* Public Routes */}
       <Route path="/register" element={<MemberRegister />} />
-      
+      <Route path="/admin/events" element={<AdminEvents />} />
       {/* Platform Admin Routes */}
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
