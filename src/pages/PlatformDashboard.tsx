@@ -1,39 +1,27 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-
-interface Organization {
-  id: string;
-  name: string;
-  organization_type: string;
-  contact_email: string;
-  contract_status: string;
-  contract_expires_at: string;
-}
+import { THEME, Button, Card, Badge, PageContainer } from '../components/UI';
 
 export default function PlatformDashboard() {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      // 1. Check auth
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/platform-admin/login');
-        return;
-      }
+      if (!user) return navigate('/platform-admin/login');
       setEmail(user.email ?? null);
 
-      // 2. Fetch organizations
-      const { data, error } = await supabase
+      // Fetch ALL organizations across the platform
+      const { data } = await supabase
         .from('organizations')
         .select('*')
         .order('created_at', { ascending: false });
-
-      if (!error && data) setOrganizations(data);
+        
+      if (data) setOrganizations(data);
       setLoading(false);
     }
     load();
@@ -45,74 +33,58 @@ export default function PlatformDashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f172a', color: 'white', padding: '2rem' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Platform Admin Console</h1>
-            <p style={{ color: '#94a3b8' }}>Signed in as: {email}</p>
-          </div>
-          <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', background: '#dc2626', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}>
-            Sign out
-          </button>
+    <PageContainer 
+      title="Platform Admin Console" 
+      subtitle={`Signed in as: ${email}`}
+      action={
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Link to="/platform-admin/organizations/new">
+            <Button variant="primary">+ New Organization</Button>
+          </Link>
+          <Button variant="danger" onClick={handleLogout}>Sign out</Button>
         </div>
-
-        {/* Section: Organizations */}
-        <div style={{ background: '#1e293b', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Organizations</h2>
-            <button
-              onClick={() => navigate('/platform-admin/organizations/new')}
-              style={{ padding: '0.5rem 1rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
-            >
-              + New Organization
-            </button>
-          </div>
-
-          {loading ? (
-            <p style={{ color: '#94a3b8' }}>Loading…</p>
-          ) : organizations.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-              <p style={{ marginBottom: '1rem' }}>No organizations yet.</p>
-              <p style={{ fontSize: '0.875rem' }}>Create your first organization using the button above, or use the public registration page.</p>
-            </div>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      }
+    >
+      <Card>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '1.5rem' }}>Registered Organizations</h2>
+        
+        {loading ? (
+          <p style={{ textAlign: 'center', color: THEME.textMuted }}>Loading organizations...</p>
+        ) : organizations.length === 0 ? (
+          <p style={{ textAlign: 'center', color: THEME.textMuted }}>No organizations found.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: THEME.text, minWidth: '700px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #334155', textAlign: 'left' }}>
-                  <th style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#94a3b8' }}>Name</th>
-                  <th style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#94a3b8' }}>Type</th>
-                  <th style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#94a3b8' }}>Contact Email</th>
-                  <th style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#94a3b8' }}>Status</th>
-                  <th style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#94a3b8' }}>Expires</th>
+                <tr style={{ borderBottom: `1px solid ${THEME.border}`, textAlign: 'left' }}>
+                  <th style={{ padding: '1rem', color: THEME.textMuted }}>Organization</th>
+                  <th style={{ padding: '1rem', color: THEME.textMuted }}>Type</th>
+                  <th style={{ padding: '1rem', color: THEME.textMuted }}>Contact Email</th>
+                  <th style={{ padding: '1rem', color: THEME.textMuted }}>Status</th>
+                  <th style={{ padding: '1rem', color: THEME.textMuted }}>Expires</th>
                 </tr>
               </thead>
               <tbody>
-                {organizations.map((org) => (
-                  <tr key={org.id} style={{ borderBottom: '1px solid #334155' }}>
-                    <td style={{ padding: '0.75rem' }}>{org.name}</td>
-                    <td style={{ padding: '0.75rem', textTransform: 'capitalize' }}>{org.organization_type}</td>
-                    <td style={{ padding: '0.75rem' }}>{org.contact_email}</td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.25rem',
-                        fontSize: '0.75rem',
-                        background: org.contract_status === 'active' ? '#166534' : '#7f1d1d',
-                        color: 'white'
-                      }}>
-                        {org.contract_status}
-                      </span>
+                {organizations.map(org => (
+                  <tr key={org.id} style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                    <td style={{ padding: '1rem', fontWeight: 500 }}>{org.name}</td>
+                    <td style={{ padding: '1rem', textTransform: 'capitalize' }}>{org.organization_type}</td>
+                    <td style={{ padding: '1rem', color: THEME.textMuted }}>{org.contact_email}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <Badge type={org.contract_status === 'active' ? 'success' : 'danger'}>
+                        {org.contract_status.toUpperCase()}
+                      </Badge>
                     </td>
-                    <td style={{ padding: '0.75rem' }}>{new Date(org.contract_expires_at).toLocaleDateString()}</td>
+                    <td style={{ padding: '1rem', color: THEME.textMuted }}>
+                      {new Date(org.contract_expires_at).toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
-      </div>
-    </div>
+          </div>
+        )}
+      </Card>
+    </PageContainer>
   );
 }

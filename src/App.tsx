@@ -3,6 +3,10 @@ import PlatformLogin from './pages/PlatformLogin';
 import PlatformDashboard from './pages/PlatformDashboard';
 import NewOrganization from './pages/NewOrganization';
 import OrgLogin from './pages/OrgLogin';
+import NewOrganization from './pages/NewOrganization';
+
+
+
 import OrgDashboard from './pages/OrgDashboard';
 import MemberRegister from './pages/MemberRegister';
 import AdminScan from './pages/AdminScan'; 
@@ -47,6 +51,8 @@ export default function App() {
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
       
+// Ensure this route exists:
+<Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
       {/* Organization Admin Routes */}
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />
