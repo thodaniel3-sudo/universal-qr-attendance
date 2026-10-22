@@ -90,7 +90,7 @@ export default function AdminScan() {
       const data = await res.json();
       
       if (!res.ok) throw new Error(data.error || 'Validation failed');
-      setScanResult(data.member);
+      setScanResult({ ...data.member, token });
     } catch (err: any) {
       setError(err.message);
       isScanningRef.current = false;
