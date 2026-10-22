@@ -36,7 +36,7 @@ export default function ScannerStandalone() {
           .eq('status', 'open');
         if (data) {
           setEvents(data);
-          if (data.length > 0) setSelectedEvent(data[0].id);
+          // Removed the auto-selection so it forces the user to pick one
         }
       }
     }
@@ -84,18 +84,21 @@ export default function ScannerStandalone() {
 
           if (code && !isProcessingRef.current) {
             const scannedData = code.data.trim();
-            setOutput("QR Code detected: " + scannedData);
             
             // PAUSE SCANNING while we process the database request
             isProcessingRef.current = true;
             
-            await handleTokenScan(scannedData);
-            
-            // RESUME SCANNING after successful scan
-            setTimeout(() => {
-              isProcessingRef.current = false;
-              setOutput("Scan a QR code by pointing your camera at it.");
-            }, 3000);
+            if (!selectedEvent) {
+              setOutput("⚠️ Please select an event first!");
+              alert("Please select an event first!");
+              setTimeout(() => {
+                 isProcessingRef.current = false;
+                 setOutput("Scan a QR code by pointing your camera at it.");
+              }, 3000);
+            } else {
+              setOutput("QR Code detected: " + scannedData);
+              await handleTokenScan(scannedData);
+            }
           }
         }
       }
@@ -116,12 +119,10 @@ export default function ScannerStandalone() {
       scanningRef.current = false;
       if (stream) stream.getTracks().forEach(track => track.stop());
     };
-  }, []);
+  }, [selectedEvent]); // Added selectedEvent dependency so it updates in the loop
 
   // 3. Send Token to Supabase Edge Function
   async function handleTokenScan(token: string) {
-    if (!selectedEvent) return alert("Please select an event first!");
-    
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
         method: 'POST',
@@ -142,32 +143,47 @@ export default function ScannerStandalone() {
     } catch (err: any) {
       setOutput("❌ " + err.message);
       alert(err.message);
+    } finally {
+      // RESUME SCANNING after processing finishes
+      setTimeout(() => {
+        isProcessingRef.current = false;
+        setOutput("Scan a QR code by pointing your camera at it.");
+      }, 3000);
     }
   }
 
   // Your exact CSS styling applied to inline React styles
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', backgroundColor: '#121212', minHeight: '100vh', padding: '2rem', color: '#fff' }}>
+      
+      <h1 style={{ color: '#ffcc00' }}>QR Code Scanner</h1>
+
       <div style={{ marginBottom: '2rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Select Event to Scan For *</label>
         <select 
           value={selectedEvent} 
           onChange={e => setSelectedEvent(e.target.value)} 
-          style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', border: '2px solid #ffcc00', background: '#000', color: '#fff' }}
+          required // <-- THIS MAKES IT REQUIRED
+          style={{ padding: '0.75rem', borderRadius: '8px', fontSize: '1rem', border: '2px solid #ffcc00', background: '#000', color: '#fff', minWidth: '250px' }}
         >
-          <option value="">-- Select Event to Scan For --</option>
+          <option value="" disabled>-- Choose an Event --</option>
           {events.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
         </select>
       </div>
 
-      <h1 style={{ color: '#ffcc00' }}>QR Code Scanner</h1>
-
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
-          style={{ width: '100%', maxWidth: '400px', border: '2px solid #ffcc00', borderRadius: '12px', marginBottom: '1rem' }}
-        ></video>
+        {!selectedEvent ? (
+          <div style={{ height: '300px', width: '100%', maxWidth: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #555', borderRadius: '12px' }}>
+            <p style={{ color: '#888' }}>Camera paused. Please select an event above.</p>
+          </div>
+        ) : (
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            style={{ width: '100%', maxWidth: '400px', border: '2px solid #ffcc00', borderRadius: '12px', marginBottom: '1rem' }}
+          ></video>
+        )}
         <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
       </div>
 
