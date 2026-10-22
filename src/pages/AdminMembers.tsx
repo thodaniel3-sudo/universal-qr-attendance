@@ -2,36 +2,37 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { THEME, Button, Card, Input, Badge, PageContainer } from '../components/UI';
+import BulkImport from '../components/BulkImport';
 
 export default function AdminMembers() {
   const navigate = useNavigate();
   const [members, setMembers] = useState<any[]>([]);
+  const [orgId, setOrgId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showImport, setShowImport] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return navigate('/admin/login');
-      
-      const orgId = user.app_metadata?.org_id;
-      if (orgId) {
-        const { data } = await supabase
-          .from('organization_memberships')
-          .select('*')
-          .eq('organization_id', orgId)
-          .order('created_at', { ascending: false });
-        if (data) setMembers(data);
-      }
-      setLoading(false);
+  const loadMembers = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return navigate('/admin/login');
+    
+    const org = user.app_metadata?.org_id;
+    setOrgId(org);
+    
+    if (org) {
+      const { data } = await supabase.from('organization_memberships').select('*').eq('organization_id', org).order('created_at', { ascending: false });
+      if (data) setMembers(data);
     }
-    load();
-  }, [navigate]);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadMembers(); }, [navigate]);
 
   async function toggleStatus(id: string, currentStatus: string) {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const { error } = await supabase.from('organization_memberships').update({ status: newStatus }).eq('id', id);
-    if (!error) setMembers(members.map(m => m.id === id ? { ...m, status: newStatus } : m));
+    await supabase.from('organization_memberships').update({ status: newStatus }).eq('id', id);
+    setMembers(members.map(m => m.id === id ? { ...m, status: newStatus } : m));
   }
 
   const filtered = members.filter(m => 
@@ -47,12 +48,22 @@ export default function AdminMembers() {
       action={<Link to="/admin/dashboard"><Button variant="outline">Back to Dashboard</Button></Link>}
     >
       <Card style={{ marginBottom: '2rem' }}>
-        <Input 
-          label="Search Members" 
-          placeholder="Search by name, email, or ID number..." 
-          value={search} 
-          onChange={(e:any) => setSearch(e.target.value)} 
-        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h3 style={{ color: THEME.text, fontSize: '1.1rem' }}>Bulk Actions</h3>
+          <Button variant="outline" onClick={() => setShowImport(!showImport)}>
+            {showImport ? 'Hide Import' : 'Import from CSV'}
+          </Button>
+        </div>
+        {showImport && (
+          <div style={{ padding: '1rem', background: THEME.input, borderRadius: '0.5rem' }}>
+            <p style={{ color: THEME.textMuted, fontSize: '0.875rem', marginBottom: '1rem' }}>CSV Format: full_name, email, phone, member_reference, address</p>
+            <BulkImport orgId={orgId} onSuccess={loadMembers} />
+          </div>
+        )}
+      </Card>
+
+      <Card style={{ marginBottom: '2rem' }}>
+        <Input label="Search Members" placeholder="Search by name, email, or ID number..." value={search} onChange={(e:any) => setSearch(e.target.value)} />
       </Card>
 
       <Card>

@@ -31,33 +31,40 @@ export default function OrgDashboard() {
     <PageContainer 
       title={orgName || 'Dashboard'} 
       subtitle={`Admin: ${email}`}
-      action={<Button variant="danger" onClick={handleLogout}>Sign out</Button>}
+      action={
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link to="/admin/scanner"><Button variant="success">Scan Now</Button></Link>
+          <Button variant="danger" onClick={handleLogout}>Sign out</Button>
+        </div>
+      }
     >
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         
         <Link to="/admin/scanner" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid ${THEME.success}`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Scan Attendance</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>Open the camera to check members in.</p>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>Open the camera to verify members and check them in.</p>
           </Card>
         </Link>
 
         <Link to="/admin/events" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid ${THEME.primary}`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Events</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>Create events and open them for scanning.</p>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>Create lectures, services, or meetings and open them for scanning.</p>
           </Card>
         </Link>
-        <Link to="/admin/attendance" style={{ textDecoration: 'none' }}>
-          <Card style={{ cursor: 'pointer', borderTop: `4px solid #8b5cf6`, height: '100%' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Attendance History</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>View who attended which events and export data.</p>
-          </Card>
-        </Link>
+
         <Link to="/admin/members" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid #f59e0b`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Members</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>View members, deactivate accounts, and search details.</p>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>View members, import from CSV, or deactivate accounts.</p>
+          </Card>
+        </Link>
+
+        <Link to="/admin/attendance" style={{ textDecoration: 'none' }}>
+          <Card style={{ cursor: 'pointer', borderTop: `4px solid #8b5cf6`, height: '100%' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Attendance History</h2>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>View who attended which events and export CSV reports.</p>
           </Card>
         </Link>
         
