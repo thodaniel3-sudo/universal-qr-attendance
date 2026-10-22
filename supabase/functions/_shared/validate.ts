@@ -19,11 +19,13 @@ export const OrganizationRegisterSchema = z.object({
   admin_email: z.string().email().max(200),
   admin_password: z.string().min(8).max(200),
   admin_full_name: z.string().trim().min(2).max(200),
+
+
   contract_duration_months: z
     .number()
     .int()
     .refine(v =>
-      [3, 6, 12, 24, 60, 120, 180].includes(v),
+      [3, 6, 12, 24, 36, 60, 96, 120, 180, 240].includes(v),
       { message: 'Invalid contract duration' }
     ),
   photo_missing_policy: z.enum(['allow_with_flag', 'block']).default('allow_with_flag'),

@@ -8,7 +8,12 @@ const CONTRACT_OPTIONS = [
   { months: 6, label: '6 Months' },
   { months: 12, label: '1 Year' },
   { months: 24, label: '2 Years' },
+  { months: 36, label: '3 Years' },
   { months: 60, label: '5 Years' },
+  { months: 96, label: '8 Years' },
+  { months: 120, label: '10 Years' },
+  { months: 180, label: '15 Years' },
+  { months: 240, label: '20 Years' },
 ];
 
 export default function NewOrganization() {
