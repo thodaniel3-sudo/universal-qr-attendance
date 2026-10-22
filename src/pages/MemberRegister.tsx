@@ -51,7 +51,7 @@ export default function MemberRegister() {
     formData.append('accepted_privacy_notice', 'true');
     formData.append('photo', photo);
 
-    // 2. Call the Edge Function (We will deploy this next)
+    // 2. Call the Edge Function
     const res = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-member-register`,
       {
@@ -59,7 +59,7 @@ export default function MemberRegister() {
         headers: {
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
-        body: formData, // No Content-Type header! FormData sets it automatically.
+        body: formData,
       }
     );
 
@@ -169,8 +169,18 @@ function QRSuccessView({ token, name }: { token: string, name: string }) {
 
   useEffect(() => {
     // Generate QR code data URL
-    QRCode.toDataURL(token, { width: 300, margin: 2 }).then(setQrUrl);
-  }, [token]);
+    QRCode.toDataURL(token, { width: 400, margin: 2 }).then((url) => {
+      setQrUrl(url);
+      
+      // Auto-download functionality
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR-${name.replace(/\s+/g, '-')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }, [token, name]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
@@ -181,11 +191,16 @@ function QRSuccessView({ token, name }: { token: string, name: string }) {
         {qrUrl && <img src={qrUrl} alt="QR Code" style={{ width: '100%', maxWidth: '250px', margin: '0 auto 1.5rem', display: 'block' }} />}
         
         <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>
-          Save this QR code. You will use it to check in at events.
+          Your QR code has been automatically downloaded. Save it for check-in!
         </p>
         
-        <button onClick={() => window.print()} style={{ padding: '0.75rem 1.5rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}>
-          Print QR Code
+        <button onClick={() => {
+          const link = document.createElement('a');
+          link.href = qrUrl;
+          link.download = `QR-${name.replace(/\s+/g, '-')}.png`;
+          link.click();
+        }} style={{ padding: '0.75rem 1.5rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', width: '100%' }}>
+          Download Again
         </button>
       </div>
     </div>
