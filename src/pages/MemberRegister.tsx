@@ -60,7 +60,7 @@ export default function MemberRegister() {
       return;
     }
     
-    setSuccessData({ token: data.qr_token, name: data.member.full_name });
+    setSuccessData({ token: data.qr_url, name: data.member.full_name });
     setLoading(false);
   }
 

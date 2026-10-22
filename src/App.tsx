@@ -11,7 +11,7 @@ import AdminEvents from './pages/AdminEvents';
 import AdminMembers from './pages/AdminMembers';
 import AdminAttendance from './pages/AdminAttendance';
 import { THEME, Button, Card } from './components/UI';
-
+import PublicScanView from './pages/PublicScanView';
 // --- ANIMATION KEYFRAMES ---
 const animationStyles = `
   @keyframes fadeInUp {
@@ -76,7 +76,7 @@ function Landing() {
           
           <Link to="/admin/scanner">
             <Button variant="primary" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
-              📷 Open Scanner [LIVE]
+              📷 Open Scanner  [LIVE]
             </Button>
           </Link>
           
@@ -138,7 +138,7 @@ export default function App() {
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
-      
+      <Route path="/scan/:token" element={<PublicScanView />} />
       <Route path="/admin/login" element={<OrgLogin />} />
       <Route path="/admin/dashboard" element={<OrgDashboard />} />
       <Route path="/admin/events" element={<AdminEvents />} />

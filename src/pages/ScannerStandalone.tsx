@@ -84,7 +84,13 @@ export default function ScannerStandalone() {
     };
   }, [selectedEvent, scannedMember]);
 
-  async function validateToken(token: string) {
+  async function validateToken(scannedData: string) {
+    // Extract token if a full URL was scanned (e.g. https://.../scan/abc123)
+    let token = scannedData;
+    if (scannedData.includes('/scan/')) {
+      token = scannedData.split('/scan/')[1];
+    }
+
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
         method: 'POST',
@@ -93,6 +99,8 @@ export default function ScannerStandalone() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      
+      // Save the clean token, not the URL, for the confirm step
       setScannedMember({ ...data.member, rawToken: token });
       setOutput("✅ Identity found. Verify photo before confirming.");
     } catch (err: any) {
