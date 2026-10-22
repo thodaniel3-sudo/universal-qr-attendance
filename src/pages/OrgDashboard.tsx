@@ -33,19 +33,26 @@ export default function OrgDashboard() {
       subtitle={`Admin: ${email}`}
       action={<Button variant="danger" onClick={handleLogout}>Sign out</Button>}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
         
         <Link to="/admin/scanner" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid ${THEME.success}`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Scan Attendance</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>Open the camera to check members in for active events.</p>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>Open the camera to check members in.</p>
           </Card>
         </Link>
 
         <Link to="/admin/events" style={{ textDecoration: 'none' }}>
           <Card style={{ cursor: 'pointer', borderTop: `4px solid ${THEME.primary}`, height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Events</h2>
-            <p style={{ color: THEME.textMuted, margin: 0 }}>Create new lectures, services, or meetings and open them for attendance.</p>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>Create events and open them for scanning.</p>
+          </Card>
+        </Link>
+
+        <Link to="/admin/members" style={{ textDecoration: 'none' }}>
+          <Card style={{ cursor: 'pointer', borderTop: `4px solid #f59e0b`, height: '100%' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>Manage Members</h2>
+            <p style={{ color: THEME.textMuted, margin: 0 }}>View members, deactivate accounts, and search details.</p>
           </Card>
         </Link>
         
