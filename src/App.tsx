@@ -10,13 +10,10 @@ import ScannerStandalone from './pages/ScannerStandalone';
 import AdminEvents from './pages/AdminEvents';
 import AdminMembers from './pages/AdminMembers';
 import AdminAttendance from './pages/AdminAttendance';
-import { THEME, Button, Card } from './components/UI';
 import PublicScanView from './pages/PublicScanView';
 import AdminMemberLink from './pages/AdminMemberLink';
-
 import AdminCSVExport from './pages/AdminCSVExport';
-
-
+import { THEME, Button, Card } from './components/UI';
 
 // --- ANIMATION KEYFRAMES ---
 const animationStyles = `
@@ -53,11 +50,26 @@ function Landing() {
       
       <style>{animationStyles}</style>
 
-      {/* Clean Navigation Bar (No clutter) */}
+      {/* Clean Navigation Bar */}
       <nav style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}` }} className="animate-fade-up">
+        
+        {/* LEFT: Logo */}
         <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
+        
+        {/* RIGHT: Register Button */}
+        <a 
+          href="https://universal-qr-attendance-rdxa.vercel.app/register?org=shades"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'none' }}
+        >
+          <Button variant="success" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
+            👤 Register Now
+          </Button>
+        </a>
+
       </nav>
 
       {/* Hero Section */}
@@ -69,7 +81,7 @@ function Landing() {
         
         <h1 className="animate-fade-up delay-200" style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, maxWidth: '800px', marginBottom: '1.5rem' }}>
           Universal QR Code <br />
-          <span style={{ color: THEME.primary }}>Attendance Management</span>
+          <span style={{ color: THEME.primary }}>Attendance Management System</span>
         </h1>
         
         <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
