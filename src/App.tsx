@@ -26,28 +26,31 @@ const animationStyles = `
   .delay-200 { animation-delay: 0.2s; }
   .delay-300 { animation-delay: 0.3s; }
   .delay-400 { animation-delay: 0.4s; }
-  .delay-500 { animation-delay: 0.5s; }
+  
+  /* Hover effects */
+  .btn-hover {
+    transition: all 0.2s ease-in-out !important;
+  }
+  .btn-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+  .btn-outline-hover:hover {
+    border-color: ${THEME.textMuted} !important;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
 `;
 
 function Landing() {
   return (
     <div style={{ minHeight: '100vh', background: THEME.bg, color: THEME.text, display: 'flex', flexDirection: 'column' }}>
       
-      {/* INJECT ANIMATIONS */}
       <style>{animationStyles}</style>
 
-      {/* Navigation Bar */}
+      {/* Clean Navigation Bar (No clutter) */}
       <nav style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${THEME.border}` }} className="animate-fade-up">
         <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>
           <span style={{ color: THEME.primary }}>QR</span>Attendance
-        </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link to="/admin/scanner">
-            <Button variant="outline" style={{ padding: '0.5rem 1rem' }}>📷 Quick Scan</Button>
-          </Link>
-          <Link to="/admin/login">
-            <Button variant="primary" style={{ padding: '0.5rem 1rem' }}>Organization Login</Button>
-          </Link>
         </div>
       </nav>
 
@@ -68,25 +71,27 @@ function Landing() {
           Generate secure QR codes, verify members with photos, and export reports instantly.
         </p>
 
+        {/* THE 3 CLEAN BUTTONS */}
         <div className="animate-fade-up delay-400" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          
           <Link to="/admin/scanner">
-            <Button variant="primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+            <Button variant="primary" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
               📷 Open Scanner
             </Button>
           </Link>
           
-          {/* FIXED BORDER HERE */}
           <Link to="/admin/login">
-            <Button variant="outline" style={{ padding: '1rem 2rem', fontSize: '1.1rem', border: `1px solid ${THEME.border}` }}>
+            <Button variant="outline" className="btn-hover btn-outline-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px', border: `1px solid ${THEME.border}` }}>
               🏢 Organization Admin Login
             </Button>
           </Link>
           
           <Link to="/register">
-            <Button variant="success" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+            <Button variant="success" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
               👤 Register as Member
             </Button>
           </Link>
+
         </div>
       </main>
 
