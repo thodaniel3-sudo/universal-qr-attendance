@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Html5Qrcode } from 'html5-qrcode';
 
 export default function AdminScan() {
   const navigate = useNavigate();
@@ -12,7 +11,7 @@ export default function AdminScan() {
   const [scanResult, setScanResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerRef = useRef<any>(null);
   const isScanningRef = useRef(false);
 
   // 1. Load User & Events
@@ -40,29 +39,36 @@ export default function AdminScan() {
     init();
   }, [navigate]);
 
-  // 2. Start Camera
-  const startScanner = () => {
+  // 2. Start Camera (with dynamic import for Vercel)
+  const startScanner = async () => {
     if (!selectedEvent) return alert("Please select an event first.");
     setScanResult(null);
     setError(null);
-    
-    const scanner = new Html5Qrcode("reader");
-    scannerRef.current = scanner;
 
-    scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => {
-        if (!isScanningRef.current) {
-          isScanningRef.current = true;
-          scanner.pause();
-          handleTokenScan(decodedText);
-        }
-      },
-      (errorMessage) => { /* ignore per-frame scan errors */ }
-    ).catch(err => {
-      setError("Could not start camera. Ensure you are on HTTPS or localhost and have granted permissions.");
-    });
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      const scanner = new Html5Qrcode("reader");
+      scannerRef.current = scanner;
+
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          if (!isScanningRef.current) {
+            isScanningRef.current = true;
+            scanner.pause();
+            handleTokenScan(decodedText);
+          }
+        },
+        (errorMessage) => { /* ignore per-frame scan errors */ }
+      ).catch((err: any) => {
+        console.error(err);
+        setError("Could not start camera. Ensure you are on HTTPS or localhost and have granted permissions.");
+      });
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to load QR scanner library: " + err.message);
+    }
   };
 
   // 3. Stop Camera
@@ -94,7 +100,7 @@ export default function AdminScan() {
     } catch (err: any) {
       setError(err.message);
       isScanningRef.current = false;
-      if (scannerRef.current?.getState() === 2) scannerRef.current.resume(); // resume if failed
+      if (scannerRef.current?.getState() === 2) scannerRef.current.resume();
     } finally {
       setLoading(false);
     }
@@ -112,7 +118,7 @@ export default function AdminScan() {
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
         },
         body: JSON.stringify({ 
-          token: scanResult.token, // Note: we need the raw token, let's fix the backend next
+          token: scanResult.token,
           event_id: selectedEvent,
           override: false
         })
