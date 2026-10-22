@@ -1,0 +1,37 @@
+project_id = "universal-qr-attendance"
+
+[functions.public-organization-register]
+verify_jwt = false
+
+[functions.public-member-register]
+verify_jwt = false
+
+[functions.public-organizations-list]
+verify_jwt = false
+
+[functions.admin-scan-validate]
+verify_jwt = true
+
+[functions.admin-scan-confirm]
+verify_jwt = true
+
+[functions.admin-member-photo]
+verify_jwt = true
+
+[functions.platform-auth-login]
+verify_jwt = false
+
+[functions.platform-auth-mfa-verify]
+verify_jwt = false
+
+[functions.platform-organization-manage]
+verify_jwt = true
+
+[functions.platform-member-manage]
+verify_jwt = true
+
+[functions.platform-member-photo]
+verify_jwt = true
+
+[functions.cron-contract-expiry]
+verify_jwt = false
