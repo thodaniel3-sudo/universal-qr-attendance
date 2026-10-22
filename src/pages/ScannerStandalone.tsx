@@ -16,7 +16,7 @@ export default function ScannerStandalone() {
   const [scannedMember, setScannedMember] = useState<any>(null);
   const [adminSecret, setAdminSecret] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scannedRaw, setScannedRaw] = useState<string>('');
+  const [debugInfo, setDebugInfo] = useState<string>('');
   
   const scanningRef = useRef(true);
   const isProcessingRef = useRef(false);
@@ -75,7 +75,7 @@ export default function ScannerStandalone() {
             } else {
               isProcessingRef.current = true;
               const scannedData = code.data.trim();
-              setScannedRaw(scannedData);
+              setDebugInfo(`Scanned: ${scannedData}`);
               await validateToken(scannedData);
             }
           }
@@ -97,42 +97,62 @@ export default function ScannerStandalone() {
     };
   }, [selectedEvent, scannedMember]);
 
-  async function validateToken(scannedData: string) {
-    // Extract token from URL OR use raw token
-    let token = scannedData;
-    if (scannedData.includes('/scan/')) {
-      token = scannedData.split('/scan/')[1];
+  // ⭐ ROBUST TOKEN EXTRACTOR
+  function extractToken(scannedData: string): string {
+    let token = scannedData.trim();
+    
+    // If it's a URL, extract the part after /scan/
+    if (token.includes('/scan/')) {
+      token = token.split('/scan/')[1];
     }
-    // Strip any trailing query/hash if present
+    
+    // Remove any trailing query string or hash
     token = token.split('?')[0].split('#')[0];
+    
+    // Remove any trailing slashes
+    token = token.replace(/\/+$/, '');
+    
+    return token;
+  }
 
-    console.log('Scanning with token:', token);
+  async function validateToken(scannedData: string) {
+    const token = extractToken(scannedData);
+    console.log('🎯 EXTRACTED TOKEN:', token);
+    setDebugInfo(`Token: ${token}`);
+    setOutput(`Validating token...`);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-validate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY 
+        },
         body: JSON.stringify({ token })
       });
       const data = await res.json();
+      console.log('📡 VALIDATE RESPONSE:', data);
+      
       if (!res.ok) throw new Error(data.error || 'Validation failed');
       
       setScannedMember({ ...data.member, rawToken: token });
       setOutput("✅ Identity found. Verify photo and enter admin secret.");
     } catch (err: any) {
       setOutput("❌ " + err.message);
-      setTimeout(() => { setOutput("Point camera at QR code"); isProcessingRef.current = false; }, 3000);
+      setDebugInfo(`Error: ${err.message}`);
+      setTimeout(() => { 
+        setOutput("Point camera at QR code"); 
+        isProcessingRef.current = false; 
+      }, 3000);
     }
   }
 
   async function confirmAttendance(e: React.FormEvent) {
     e.preventDefault();
     if (!adminSecret) return alert("Please enter the admin secret.");
-    if (!selectedEvent) return alert("Please select an event first.");
     
     setIsProcessing(true);
     try {
-      // Verify the admin's password by attempting sign in
       const { data: { user } } = await supabase.auth.getUser();
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: user?.email || '',
@@ -141,7 +161,6 @@ export default function ScannerStandalone() {
 
       if (authError) throw new Error("Incorrect admin secret.");
       
-      // Record attendance
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-scan-confirm`, {
         method: 'POST',
         headers: { 
@@ -171,7 +190,7 @@ export default function ScannerStandalone() {
     setScannedMember(null);
     setIsProcessing(false);
     setAdminSecret('');
-    setScannedRaw('');
+    setDebugInfo('');
     isProcessingRef.current = false;
     setOutput("Point camera at QR code");
   }
@@ -196,9 +215,9 @@ export default function ScannerStandalone() {
             <video ref={videoRef} autoPlay playsInline style={{ width: '100%', border: `2px solid ${THEME.primary}`, borderRadius: '12px', marginBottom: '1rem' }}></video>
             <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
             <p style={{ fontSize: '1rem', fontWeight: 'bold', color: THEME.textMuted }}>{output}</p>
-            {scannedRaw && (
-              <p style={{ fontSize: '0.75rem', color: THEME.textMuted, wordBreak: 'break-all', marginTop: '0.5rem' }}>
-                Last scanned: {scannedRaw.substring(0, 60)}...
+            {debugInfo && (
+              <p style={{ fontSize: '0.7rem', color: THEME.textMuted, wordBreak: 'break-all', marginTop: '0.5rem', fontFamily: 'monospace' }}>
+                {debugInfo}
               </p>
             )}
           </Card>
