@@ -27,7 +27,7 @@ export default function PaymentSuccess() {
 
       // Poll the Edge Function until the webhook finishes processing
       let attempts = 0;
-      while (attempts < 15) {
+      while (attempts < 30) {
         try {
           const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-payment-temp-password`, {
             method: 'POST',
