@@ -121,6 +121,54 @@ function Landing() {
 
         </div>
       </main>
+            {/* HOW IT WORKS SECTION */}
+      <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', background: '#0a0f1c', borderTop: `1px solid ${THEME.border}` }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: THEME.text, marginBottom: '1rem' }}>
+              How it works
+            </h2>
+            <p style={{ color: THEME.textMuted, fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+              Get your organization running in four simple steps.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+            <HowItWorksCard
+              number="1"
+              icon="💳"
+              title="Choose a plan"
+              description="Select Weekly, Monthly, or Yearly. Pay securely with your card via Paystack."
+            />
+            <HowItWorksCard
+              number="2"
+              icon="🔐"
+              title="Set your password"
+              description="Immediately after payment, create your admin password and access your dashboard."
+            />
+            <HowItWorksCard
+              number="3"
+              icon="📅"
+              title="Create events & share"
+              description="Create your first event (e.g., Sunday Service) and share your unique member link."
+            />
+            <HowItWorksCard
+              number="4"
+              icon="📷"
+              title="Scan & track"
+              description="Scan your members' QR codes at the event. Track attendance and export reports anytime."
+            />
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <a href="/pricing">
+              <button style={{ padding: '1rem 2.5rem', background: THEME.primary, color: 'white', border: 'none', borderRadius: '0.5rem', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer' }}>
+                Get Started →
+              </button>
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* Feature Section */}
       <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0a0f1c' }}>
@@ -155,7 +203,38 @@ function Landing() {
     </div>
   );
 }
-
+function HowItWorksCard({ number, icon, title, description }: {
+  number: string;
+  icon: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Card style={{ textAlign: 'center', position: 'relative' }}>
+      <div style={{
+        position: 'absolute',
+        top: '-12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '28px',
+        height: '28px',
+        borderRadius: '50%',
+        background: THEME.primary,
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 700,
+        fontSize: '0.85rem',
+      }}>
+        {number}
+      </div>
+      <div style={{ fontSize: '2.5rem', marginBottom: '1rem', marginTop: '0.5rem' }}>{icon}</div>
+      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: THEME.text, marginBottom: '0.5rem' }}>{title}</h3>
+      <p style={{ color: THEME.textMuted, fontSize: '0.9rem', margin: 0 }}>{description}</p>
+    </Card>
+  );
+}
 export default function App() {
   return (
     <Routes>
