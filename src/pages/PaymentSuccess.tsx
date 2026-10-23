@@ -17,47 +17,51 @@ export default function PaymentSuccess() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function fetchPayment() {
-      if (!reference) {
-        setError("No payment reference found in the URL.");
-        setLoading(false);
-        return;
-      }
-
-      // Poll the Edge Function until the webhook finishes processing
-      let attempts = 0;
-      while (attempts < 30) {
-        try {
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-payment-temp-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
-            body: JSON.stringify({ reference }),
-          });
-          
-          const data = await res.json();
-          
-          if (res.ok && data.success) {
-            setTempPassword(data.tempPassword);
-            setPaymentData({ 
-              organization_name: data.organization_name, 
-              organization_email: data.organization_email 
-            });
-            setLoading(false);
-            return;
-          }
-        } catch (err) {
-          // Ignore error, keep polling
-        }
-        
-        // Wait 2 seconds before trying again
-        await new Promise(r => setTimeout(r, 2000));
-        attempts++;
-      }
-
-      setError("Payment is still processing. Please wait a moment and refresh the page.");
+  async function fetchPayment() {
+    if (!reference) {
+      setError("No payment reference found in the URL.");
       setLoading(false);
+      return;
     }
+
+    setLoading(true);
+    setError(null);
+
+    // Try up to 30 times (60 seconds total)
+    let attempts = 0;
+    while (attempts < 30) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-payment-temp-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({ reference }),
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+          setTempPassword(data.tempPassword);
+          setPaymentData({ 
+            organization_name: data.organization_name, 
+            organization_email: data.organization_email 
+          });
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        // Ignore network errors and keep trying
+      }
+      
+      // Wait 2 seconds before trying again
+      await new Promise(r => setTimeout(r, 2000));
+      attempts++;
+    }
+
+    setError("Payment is still processing. Please wait a moment and click refresh.");
+    setLoading(false);
+  }
+
+  useEffect(() => {
     fetchPayment();
   }, [reference]);
 
@@ -100,13 +104,16 @@ export default function PaymentSuccess() {
     );
   }
 
+  // If we timed out but the payment isn't ready yet, show a "Refresh" prompt instead of a hard Error
   if (error && !paymentData) {
     return (
-      <PageContainer title="Payment Error" subtitle="Something went wrong">
+      <PageContainer title="Payment Processing" subtitle="Almost there">
         <Card style={{ maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
-          <p style={{ color: THEME.danger, marginBottom: '2rem' }}>{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>Refresh Page</Button>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+          <p style={{ color: THEME.warning, marginBottom: '2rem' }}>{error}</p>
+          <Button variant="primary" onClick={fetchPayment} style={{ width: '100%' }}>
+            Check Again
+          </Button>
         </Card>
       </PageContainer>
     );
