@@ -110,7 +110,7 @@ export default function PaymentSuccess() {
       <PageContainer title="Payment Processing" subtitle="Almost there">
         <Card style={{ maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-          <p style={{ color: THEME.warning, marginBottom: '2rem' }}>{error}</p>
+          <p style={{ color: THEME.primary, marginBottom: '2rem' }}>{error}</p>
           <Button variant="primary" onClick={fetchPayment} style={{ width: '100%' }}>
             Check Again
           </Button>
