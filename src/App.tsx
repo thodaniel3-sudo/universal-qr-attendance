@@ -75,7 +75,7 @@ function Landing() {
           style={{ textDecoration: 'none' }}
         >
           <Button variant="success" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
-            👤 Register Now FOR TESTING
+            👤 Register Now for TESTING
           </Button>
         </a>
 
