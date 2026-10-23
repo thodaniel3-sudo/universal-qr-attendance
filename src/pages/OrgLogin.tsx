@@ -48,14 +48,27 @@ export default function OrgLogin() {
 
           {error && <p style={{ color: THEME.danger, fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
 
+          
+          
+          
+          
+          
           <Button type="submit" disabled={loading} style={{ width: '100%' }}>
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
+  {loading ? 'Signing in…' : 'Sign in'}
+</Button>
+</form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          <Link to="/" style={{ color: THEME.textMuted, fontSize: '0.875rem', textDecoration: 'none' }}>← Back to Home</Link>
-        </div>
+<div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+  <Link to="/forgot-password" style={{ color: THEME.primary, fontSize: '0.875rem', textDecoration: 'underline' }}>
+    Forgot Password?
+  </Link>
+  <Link to="/" style={{ color: THEME.textMuted, fontSize: '0.875rem', textDecoration: 'none' }}>
+    ← Back to Home
+  </Link>
+</div>
+
+
+
       </Card>
     </div>
   );
