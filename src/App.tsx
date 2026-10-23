@@ -75,7 +75,7 @@ function Landing() {
           style={{ textDecoration: 'none' }}
         >
           <Button variant="success" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
-            👤 Register Now
+            👤 Register Now FOR TESTING
           </Button>
         </a>
 
@@ -97,9 +97,7 @@ function Landing() {
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.
         </p>
-       <Link to="/pricing">
-  <Button variant="primary">💳 Choose a Plan</Button>
-</Link>
+     
         {/* THE 3 CLEAN BUTTONS */}
         <div className="animate-fade-up delay-400" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           
