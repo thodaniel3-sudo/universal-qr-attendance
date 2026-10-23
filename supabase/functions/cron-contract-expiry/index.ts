@@ -98,15 +98,18 @@ Deno.serve(async (req) => {
     }
   }
 
-  // STEP 3 — delete archived data after grace period
-  const cutoff = new Date(Date.now() - graceDays * 86400000).toISOString();
-  const { data: toDelete } = await svc
-    .from('organizations')
-    .select('id, contact_email, name')
-    .eq('contract_status', 'archived')
-    .not('id', 'in',
-      `(select organization_id from contract_events where event_type='csv_exported' and created_at > '${cutoff}')`
-    );
+
+
+
+ // Delete archived data 90 days after CONTRACT expiry (not subscription expiry)
+const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
+const { data: toDelete } = await svc
+  .from('organizations')
+  .select('id, contact_email, name')
+  .eq('contract_status', 'archived')
+  .lt('contract_expires_at', cutoff);
+
+// ...rest stays the same
 
   for (const org of toDelete ?? []) {
     try {

@@ -16,7 +16,9 @@ import AdminCSVExport from './pages/AdminCSVExport';
 import { THEME, Button, Card } from './components/UI';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-
+import Pricing from './pages/Pricing';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PlatformPayments from './pages/PlatformPayments';
 
 
 
@@ -170,6 +172,13 @@ export default function App() {
       <Route path="/admin/members" element={<AdminMembers />} />
       <Route path="/admin/attendance" element={<AdminAttendance />} />
       <Route path="/admin/member-link" element={<AdminMemberLink />} />
+     <Route path="/pricing" element={<Pricing />} />
+     <Route path="/payment-success" element={<PaymentSuccess />} />
+     <Route path="/platform-admin/payments" element={<PlatformPayments />} /> 
+     
+     
+     
+     
       <Route path="/admin/scan" element={<AdminScan />} />
       <Route path="/admin/scanner" element={<ScannerStandalone />} />
     </Routes>

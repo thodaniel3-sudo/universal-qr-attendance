@@ -32,7 +32,20 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (qrError || !qrData) throw new Error('Invalid or revoked QR code');
+    // Check subscription status
+const { data: org } = await supabaseAdmin
+  .from('organizations')
+  .select('subscription_expires_at, contract_status')
+  .eq('id', qrData.organization_id)
+  .single();
 
+if (!org || org.contract_status !== 'active') {
+  throw new Error('Organization is inactive.');
+}
+
+if (org.subscription_expires_at && new Date(org.subscription_expires_at) < new Date()) {
+  throw new Error('Subscription expired. Please renew to continue scanning.');
+}
     // Get member details
     const { data: member, error: memberError } = await supabaseAdmin
       .from('organization_memberships')
