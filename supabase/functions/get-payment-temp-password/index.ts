@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch the payment
+    // Fetch the payment using the service role (bypasses RLS)
     const { data: payment, error } = await supabaseAdmin
       .from('payments')
-      .select('status, metadata')
+      .select('status, metadata, organization_name, organization_email')
       .eq('paystack_reference', reference)
       .single();
 
@@ -31,7 +31,12 @@ Deno.serve(async (req) => {
     if (!tempPassword) throw new Error('Temporary password not found. Please contact support.');
 
     return new Response(
-      JSON.stringify({ success: true, tempPassword }),
+      JSON.stringify({ 
+        success: true, 
+        tempPassword,
+        organization_name: payment.organization_name,
+        organization_email: payment.organization_email
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error: any) {

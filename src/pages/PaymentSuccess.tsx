@@ -39,9 +39,10 @@ export default function PaymentSuccess() {
           
           if (res.ok && data.success) {
             setTempPassword(data.tempPassword);
-            // Fetch basic payment data for the UI (name/email) from public table
-            const { data: pubData } = await supabase.from('payments').select('organization_name, organization_email').eq('paystack_reference', reference).single();
-            setPaymentData(pubData);
+            setPaymentData({ 
+              organization_name: data.organization_name, 
+              organization_email: data.organization_email 
+            });
             setLoading(false);
             return;
           }
@@ -64,7 +65,7 @@ export default function PaymentSuccess() {
     e.preventDefault();
     if (newPassword !== confirmPassword) return setError("Passwords do not match.");
     if (newPassword.length < 6) return setError("Password must be at least 6 characters.");
-    if (!tempPassword || !paymentData) return setError("Missing data. Please refresh.");
+    if (!tempPassword || !paymentData?.organization_email) return setError("Missing data. Please refresh.");
 
     setSubmitting(true);
     setError(null);
