@@ -8,7 +8,9 @@ export default function OrgDashboard() {
   const [email, setEmail] = useState<string | null>(null);
   const [orgName, setOrgName] = useState<string | null>(null);
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
-  const [showWelcome, setShowWelcome] = useState(false);
+  
+  // Default to true so it shows on first visit, but we check localStorage
+  const [showWelcome, setShowWelcome] = useState(true); 
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -25,9 +27,11 @@ export default function OrgDashboard() {
         }
       }
 
-      // Show welcome guide unless the admin dismissed it before
+      // Check if the admin previously hid the guide
       const dismissed = localStorage.getItem('admin_welcome_dismissed');
-      if (!dismissed) setShowWelcome(true);
+      if (dismissed === 'true') {
+        setShowWelcome(false);
+      }
     }
     load();
   }, [navigate]);
@@ -37,9 +41,11 @@ export default function OrgDashboard() {
     navigate('/');
   };
 
-  const dismissWelcome = () => {
-    localStorage.setItem('admin_welcome_dismissed', 'true');
-    setShowWelcome(false);
+  const toggleGuide = () => {
+    const newState = !showWelcome;
+    setShowWelcome(newState);
+    // Save preference so it remembers next time they refresh
+    localStorage.setItem('admin_welcome_dismissed', String(!newState));
   };
 
   const copyLink = () => {
@@ -53,7 +59,14 @@ export default function OrgDashboard() {
     <PageContainer 
       title={orgName || 'Dashboard'} 
       subtitle={`Admin: ${email}`}
-      action={<Button variant="danger" onClick={handleLogout}>Sign out</Button>}
+      action={
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button variant="outline" onClick={toggleGuide}>
+            {showWelcome ? '❌ Hide Guide' : '💡 Show Guide'}
+          </Button>
+          <Button variant="danger" onClick={handleLogout}>Sign out</Button>
+        </div>
+      }
     >
       {/* WELCOME GUIDE FOR NEW ADMINS */}
       {showWelcome && (
@@ -72,7 +85,7 @@ export default function OrgDashboard() {
               </p>
             </div>
             <button
-              onClick={dismissWelcome}
+              onClick={toggleGuide}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -82,7 +95,7 @@ export default function OrgDashboard() {
                 padding: '0 0.5rem',
                 lineHeight: 1,
               }}
-              title="Dismiss this guide"
+              title="Hide this guide"
             >
               ×
             </button>
@@ -137,7 +150,7 @@ export default function OrgDashboard() {
           </div>
 
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-            <Button variant="outline" onClick={dismissWelcome}>Got it, hide this guide</Button>
+            <Button variant="outline" onClick={toggleGuide}>Got it, hide this guide</Button>
           </div>
         </Card>
       )}
