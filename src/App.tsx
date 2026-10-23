@@ -64,7 +64,9 @@ function Landing() {
         <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
-        
+        <Link to="/pricing">
+  <Button variant="primary">💳 Choose a Plan</Button>
+</Link>
         {/* RIGHT: Register Button */}
         <a 
           href="https://universal-qr-attendance-rdxa.vercel.app/register?org=shades"
@@ -95,7 +97,9 @@ function Landing() {
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.
         </p>
-
+       <Link to="/pricing">
+  <Button variant="primary">💳 Choose a Plan</Button>
+</Link>
         {/* THE 3 CLEAN BUTTONS */}
         <div className="animate-fade-up delay-400" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           
