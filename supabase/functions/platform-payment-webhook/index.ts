@@ -7,7 +7,6 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-// Generate a secure random temporary password
 async function generateTempPassword() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(bytes).map(b => b.toString(36)).join('').slice(0, 16) + 'Aa1!';
@@ -21,15 +20,11 @@ Deno.serve(async (req) => {
   const signature = req.headers.get('x-paystack-signature');
   const secretKey = Deno.env.get('PAYSTACK_SECRET_KEY')!;
 
-  // Verify signature
   const hmac = await crypto.subtle.importKey('raw', new TextEncoder().encode(secretKey), { name: 'HMAC', hash: 'SHA-512' }, false, ['sign']);
   const sigBuffer = await crypto.subtle.sign('HMAC', hmac, new TextEncoder().encode(rawBody));
   const expected = Array.from(new Uint8Array(sigBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-  if (expected !== signature) {
-    console.error('Invalid webhook signature');
-    return new Response('Invalid signature', { status: 401 });
-  }
+  if (expected !== signature) return new Response('Invalid signature', { status: 401 });
 
   const event = JSON.parse(rawBody);
   if (event.event !== 'charge.success') return new Response('Ignored', { status: 200 });
@@ -38,7 +33,6 @@ Deno.serve(async (req) => {
   const reference = tx.reference;
   const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 
-  // Idempotency check
   const { data: existing } = await supabaseAdmin.from('payments').select('id, status').eq('paystack_reference', reference).single();
   if (!existing || existing.status === 'success') return new Response('Already processed', { status: 200 });
 
@@ -52,7 +46,6 @@ Deno.serve(async (req) => {
     const orgType = meta.orgType || 'other';
     const email = payment.organization_email;
 
-    // Generate unique slug
     let baseSlug = slugify(orgName);
     let slug = baseSlug;
     let suffix = 1;
@@ -63,10 +56,8 @@ Deno.serve(async (req) => {
     }
 
     const now = new Date();
-    const contractExpiry = new Date(now);
-    contractExpiry.setFullYear(contractExpiry.getFullYear() + 1);
-    const subscriptionExpiry = new Date(now);
-    subscriptionExpiry.setDate(subscriptionExpiry.getDate() + planDays);
+    const contractExpiry = new Date(now); contractExpiry.setFullYear(contractExpiry.getFullYear() + 1);
+    const subscriptionExpiry = new Date(now); subscriptionExpiry.setDate(subscriptionExpiry.getDate() + planDays);
 
     // 1. Create organization
     const { data: org, error: orgErr } = await supabaseAdmin.from('organizations').insert({
@@ -78,29 +69,49 @@ Deno.serve(async (req) => {
 
     if (orgErr || !org) throw new Error('Failed to create organization: ' + orgErr?.message);
 
-    // 2. Create auth user with a TEMP password
+    // 2. Create or Find User
     const tempPassword = await generateTempPassword();
-    const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
-      email, password: tempPassword, email_confirm: true, user_metadata: { full_name: fullName },
-    });
+    let userId;
+    let authUser;
 
-    if (authErr || !authUser.user) {
-      await supabaseAdmin.from('organizations').delete().eq('id', org.id);
-      throw new Error('Failed to create admin user: ' + authErr?.message);
+    // Check if user exists
+    const { data: { users }, error: listErr } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = users?.find(u => u.email === email);
+
+    if (existingUser) {
+      // User exists, update their password and metadata
+      userId = existingUser.id;
+      await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: tempPassword,
+        app_metadata: { role: 'organization_owner', org_id: org.id },
+      });
+      authUser = { user: { id: userId } };
+    } else {
+      // Create new user
+      const { data: newUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+        email, password: tempPassword, email_confirm: true, user_metadata: { full_name: fullName },
+      });
+      if (authErr || !newUser.user) {
+        await supabaseAdmin.from('organizations').delete().eq('id', org.id);
+        throw new Error('Failed to create admin user: ' + authErr?.message);
+      }
+      userId = newUser.user.id;
+      await supabaseAdmin.auth.admin.updateUserById(userId, {
+        app_metadata: { role: 'organization_owner', org_id: org.id },
+      });
+      authUser = newUser;
     }
 
-    // 3. Set metadata
-    await supabaseAdmin.auth.admin.updateUserById(authUser.user.id, {
-      app_metadata: { role: 'organization_owner', org_id: org.id },
-    });
+    // 3. Create profile if it doesn't exist
+    const { data: profile } = await supabaseAdmin.from('profiles').select('id').eq('id', userId).maybeSingle();
+    if (!profile) {
+      await supabaseAdmin.from('profiles').insert({ id: userId, full_name: fullName, email });
+    }
 
-    // 4. Create profile
-    await supabaseAdmin.from('profiles').insert({ id: authUser.user.id, full_name: fullName, email });
-
-    // 5. Mark payment success & STORE THE TEMP PASSWORD in metadata so the frontend can use it
+    // 4. Mark payment success & store temp pass
     await supabaseAdmin.from('payments').update({
       organization_id: org.id, status: 'success', paid_at: now.toISOString(),
-      metadata: { ...meta, tempPassword, orgId: org.id, slug, adminUserId: authUser.user.id },
+      metadata: { ...meta, tempPassword, orgId: org.id, slug, adminUserId: userId },
     }).eq('paystack_reference', reference);
 
     await supabaseAdmin.from('contract_events').insert({ organization_id: org.id, event_type: 'started', metadata: { plan, planDays, reference } });
