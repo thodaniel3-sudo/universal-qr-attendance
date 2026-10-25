@@ -96,9 +96,17 @@ function Landing() {
           <span style={{ color: THEME.primary }}>Attendance Management System</span>
         </h1>
         
-        <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
+        <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '1rem' }}>
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.
+        </p>
+
+        {/* Contact Info */}
+        <p className="animate-fade-up delay-300" style={{ fontSize: '0.95rem', color: THEME.textMuted, marginBottom: '3rem' }}>
+          For more information, please contact the site admin at{' '}
+          <a href="mailto:thodaniel3@gmail.com" style={{ color: THEME.primary, textDecoration: 'underline' }}>
+            thodaniel3@gmail.com
+          </a>
         </p>
      
         {/* THE 3 CLEAN BUTTONS */}
