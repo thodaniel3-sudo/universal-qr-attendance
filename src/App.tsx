@@ -64,9 +64,7 @@ function Landing() {
         <div style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.5px' }}>
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
-        <Link to="/pricing">
-  <Button variant="primary">💳 Choose a Plan</Button>
-</Link>
+       
         {/* RIGHT: Register Button */}
         <a 
           href="https://universal-qr-attendance-rdxa.vercel.app/register?org=shades"
@@ -91,8 +89,9 @@ function Landing() {
         <h1 className="animate-fade-up delay-200" style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, maxWidth: '800px', marginBottom: '1.5rem' }}>
           Universal QR Code <br />
           <span style={{ color: THEME.primary }}>Attendance Management System</span>
-        </h1>
-        
+        </h1> <Link to="/pricing">
+  <Button variant="primary">💳 Choose a Plan</Button>
+</Link>
         <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.

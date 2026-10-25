@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { THEME, Button, Card, Input, PageContainer } from '../components/UI';
-
+import { useNavigate, Link } from 'react-router-dom';
 const PLANS = [
   { id: 'weekly',  label: 'Weekly',  price: '₦5,000',   days: '7 days',    highlight: false },
   { id: 'monthly', label: 'Monthly', price: '₦15,000',  days: '30 days',   highlight: true  },
@@ -13,7 +13,7 @@ export default function Pricing() {
   const [form, setForm] = useState({ email: '', fullName: '', orgName: '', orgType: 'church' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+const navigate = useNavigate();
   async function handlePay(planId: string) {
     setSelectedPlan(planId);
     setError(null);
@@ -33,8 +33,12 @@ export default function Pricing() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to initialize payment');
+      
+      
       // Redirect to Paystack checkout
-      window.location.href = data.authorization_url;
+    function handlePay(planId: string) {
+  navigate(`/payment-gateway?plan=${planId}`);
+}
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -46,23 +50,41 @@ export default function Pricing() {
       {!selectedPlan ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
           {PLANS.map(plan => (
-            <Card
-              key={plan.id}
-              style={{
-                textAlign: 'center',
-                borderTop: `4px solid ${plan.highlight ? THEME.primary : THEME.border}`,
-                transform: plan.highlight ? 'scale(1.03)' : 'none',
-                boxShadow: plan.highlight ? '0 10px 30px rgba(59, 130, 246, 0.2)' : undefined,
-              }}
-            >
-              {plan.highlight && <div style={{ color: THEME.primary, fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>MOST POPULAR</div>}
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: THEME.text, marginBottom: '0.5rem' }}>{plan.label}</h2>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: THEME.primary, marginBottom: '0.25rem' }}>{plan.price}</div>
-              <p style={{ color: THEME.textMuted, marginBottom: '1.5rem' }}>per organization / {plan.days}</p>
-              <Button variant={plan.highlight ? 'primary' : 'outline'} onClick={() => handlePay(plan.id)} style={{ width: '100%' }}>
-                Choose {plan.label}
-              </Button>
-            </Card>
+           
+           
+           
+           
+          <Card
+  key={plan.id}
+  style={{
+    textAlign: 'center',
+    borderTop: `4px solid ${plan.highlight ? THEME.primary : THEME.border}`,
+    transform: plan.highlight ? 'scale(1.03)' : 'none',
+    boxShadow: plan.highlight ? '0 10px 30px rgba(59, 130, 246, 0.2)' : undefined,
+  }}
+>
+  {plan.highlight && <div style={{ color: THEME.primary, fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>MOST POPULAR</div>}
+  <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: THEME.text, marginBottom: '0.5rem' }}>{plan.label}</h2>
+  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: THEME.primary, marginBottom: '0.25rem' }}>{plan.price}</div>
+  <p style={{ color: THEME.textMuted, marginBottom: '1.5rem' }}>per organization / {plan.days}</p>
+  
+  {/* REPLACED BUTTON WITH WHATSAPP LINK */}
+  <a 
+    href={`https://wa.me/2348107247625?text=Hi, I want to subscribe to the ${plan.label} plan for my organization.`}
+    target="_blank"
+    rel="noreferrer"
+    style={{ textDecoration: 'none', display: 'block', width: '100%' }}
+  >
+    <Button variant={plan.highlight ? 'primary' : 'outline'} style={{ width: '100%' }}>
+      Choose {plan.label} (Contact Sales)
+    </Button>
+  </a>
+</Card>
+
+
+
+
+
           ))}
         </div>
       ) : (
