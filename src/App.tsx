@@ -20,8 +20,6 @@ import Pricing from './pages/Pricing';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PlatformPayments from './pages/PlatformPayments';
 
-
-
 // --- ANIMATION KEYFRAMES ---
 const animationStyles = `
   @keyframes fadeInUp {
@@ -65,22 +63,29 @@ function Landing() {
           <span style={{ color: THEME.primary }}>QR</span>Attendance
         </div>
        
-        {/* RIGHT: Register Button */}
-        <a 
-          href="https://universal-qr-attendance-rdxa.vercel.app/register?org=shades"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'none' }}
-        >
-          <Button variant="success" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
-            👤 Register Now for TESTING
-          </Button>
-        </a>
+        {/* RIGHT: Navigation Buttons */}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <Link to="/pricing">
+            <Button variant="outline" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
+              💳 Choose a Plan
+            </Button>
+          </Link>
+          <a 
+            href="https://universal-qr-attendance-rdxa.vercel.app/register?org=shades"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <Button variant="success" style={{ padding: '0.6rem 1.2rem', fontSize: '1rem' }}>
+              👤 Register Now
+            </Button>
+          </a>
+        </div>
 
       </nav>
 
       {/* Hero Section */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '5rem 2rem' }}>
         
         <div className="animate-fade-up delay-100" style={{ display: 'inline-block', padding: '0.25rem 1rem', background: 'rgba(59, 130, 246, 0.1)', color: THEME.primary, borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.5rem', border: `1px solid rgba(59, 130, 246, 0.2)` }}>
           Secure • Fast • Reliable
@@ -89,9 +94,8 @@ function Landing() {
         <h1 className="animate-fade-up delay-200" style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, maxWidth: '800px', marginBottom: '1.5rem' }}>
           Universal QR Code <br />
           <span style={{ color: THEME.primary }}>Attendance Management System</span>
-        </h1> <Link to="/pricing">
-  <Button variant="primary">💳 Choose a Plan</Button>
-</Link>
+        </h1>
+        
         <p className="animate-fade-up delay-300" style={{ fontSize: '1.25rem', color: THEME.textMuted, maxWidth: '600px', marginBottom: '3rem' }}>
           The smartest way to track attendance for churches, schools, and businesses. 
           Generate secure QR codes, verify members with photos, and export reports instantly.
@@ -102,26 +106,27 @@ function Landing() {
           
           <Link to="/admin/scanner">
             <Button variant="primary" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
-              📷 Open Scanner  [LIVE]
+              📷 Open Scanner [LIVE]
             </Button>
           </Link>
           
           <Link to="/admin/login">
             <Button variant="outline" className="btn-hover btn-outline-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px', border: `1px solid ${THEME.border}` }}>
-              🏢 Organization Admin Login
+              🏢 Admin Login
             </Button>
           </Link>
           
           <Link to="/register">
             <Button variant="success" className="btn-hover" style={{ padding: '1rem 2rem', fontSize: '1.1rem', width: '220px' }}>
-              👤 Register as Member
+              👤 Register Member
             </Button>
           </Link>
 
         </div>
       </main>
-            {/* HOW IT WORKS SECTION */}
-      <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', background: '#0a0f1c', borderTop: `1px solid ${THEME.border}` }}>
+
+      {/* HOW IT WORKS SECTION */}
+      <section className="animate-fade-up delay-500" style={{ padding: '5rem 2rem', background: '#0a0f1c', borderTop: `1px solid ${THEME.border}` }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: THEME.text, marginBottom: '1rem' }}>
@@ -137,7 +142,7 @@ function Landing() {
               number="1"
               icon="💳"
               title="Choose a plan"
-              description="Select Weekly, Monthly, or Yearly. Pay securely with your card via Paystack."
+              description="Select Weekly, Monthly, or Yearly. Pay securely with your card via Paystack or Monnify."
             />
             <HowItWorksCard
               number="2"
@@ -160,17 +165,17 @@ function Landing() {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-            <a href="/pricing">
-              <button style={{ padding: '1rem 2.5rem', background: THEME.primary, color: 'white', border: 'none', borderRadius: '0.5rem', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer' }}>
+            <Link to="/pricing">
+              <Button variant="primary" className="btn-hover" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem' }}>
                 Get Started →
-              </button>
-            </a>
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Feature Section */}
-      <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0a0f1c' }}>
+      <section className="animate-fade-up delay-500" style={{ padding: '4rem 2rem', borderTop: `1px solid ${THEME.border}`, background: '#0f172a' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📸</div>
@@ -203,9 +208,6 @@ function Landing() {
   );
 }
 
-
-
-
 function HowItWorksCard({ number, icon, title, description }: {
   number: string;
   icon: string;
@@ -234,17 +236,13 @@ function HowItWorksCard({ number, icon, title, description }: {
   );
 }
 
-
-
-
-
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/register" element={<MemberRegister />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-<Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/platform-admin/login" element={<PlatformLogin />} />
       <Route path="/platform-admin/dashboard" element={<PlatformDashboard />} />
       <Route path="/platform-admin/organizations/new" element={<NewOrganization />} />
@@ -256,13 +254,9 @@ export default function App() {
       <Route path="/admin/members" element={<AdminMembers />} />
       <Route path="/admin/attendance" element={<AdminAttendance />} />
       <Route path="/admin/member-link" element={<AdminMemberLink />} />
-     <Route path="/pricing" element={<Pricing />} />
-     <Route path="/payment-success" element={<PaymentSuccess />} />
-     <Route path="/platform-admin/payments" element={<PlatformPayments />} /> 
-     
-     
-     
-     
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/platform-admin/payments" element={<PlatformPayments />} />
       <Route path="/admin/scan" element={<AdminScan />} />
       <Route path="/admin/scanner" element={<ScannerStandalone />} />
     </Routes>
