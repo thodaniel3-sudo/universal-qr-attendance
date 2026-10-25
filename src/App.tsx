@@ -202,6 +202,10 @@ function Landing() {
     </div>
   );
 }
+
+
+
+
 function HowItWorksCard({ number, icon, title, description }: {
   number: string;
   icon: string;
@@ -209,31 +213,31 @@ function HowItWorksCard({ number, icon, title, description }: {
   description: string;
 }) {
   return (
-    <Card style={{ textAlign: 'center', position: 'relative' }}>
-      <div style={{
-        position: 'absolute',
-        top: '-12px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '28px',
-        height: '28px',
-        borderRadius: '50%',
-        background: THEME.primary,
-        color: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 700,
-        fontSize: '0.85rem',
-      }}>
-        {number}
-      </div>
-      <div style={{ fontSize: '2.5rem', marginBottom: '1rem', marginTop: '0.5rem' }}>{icon}</div>
-      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: THEME.text, marginBottom: '0.5rem' }}>{title}</h3>
-      <p style={{ color: THEME.textMuted, fontSize: '0.9rem', margin: 0 }}>{description}</p>
-    </Card>
+    <div className="group hover:-translate-y-1 transition-all duration-300">
+      <Card style={{ textAlign: 'center', position: 'relative', height: '100%', background: '#0f172a' }}>
+        <div style={{
+          position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
+          width: '28px', height: '28px', borderRadius: '50%',
+          background: THEME.primary, color: 'white',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: '0.85rem', boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.5)'
+        }}>
+          {number}
+        </div>
+        <div style={{ fontSize: '2.5rem', marginBottom: '1rem', marginTop: '0.5rem', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}>
+          {icon}
+        </div>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: THEME.text, marginBottom: '0.5rem' }}>{title}</h3>
+        <p style={{ color: THEME.textMuted, fontSize: '0.9rem', margin: 0, lineHeight: '1.5' }}>{description}</p>
+      </Card>
+    </div>
   );
 }
+
+
+
+
+
 export default function App() {
   return (
     <Routes>
