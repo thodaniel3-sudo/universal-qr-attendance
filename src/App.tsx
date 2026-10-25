@@ -103,7 +103,7 @@ function Landing() {
 
         {/* Contact Info */}
         <p className="animate-fade-up delay-300" style={{ fontSize: '0.95rem', color: THEME.textMuted, marginBottom: '3rem' }}>
-          For more information, please contact the site admin at{' '}
+          For more information, please contact the support at{' '}
           <a href="mailto:thodaniel3@gmail.com" style={{ color: THEME.primary, textDecoration: 'underline' }}>
             thodaniel3@gmail.com
           </a>
